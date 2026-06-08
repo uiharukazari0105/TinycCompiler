@@ -57,10 +57,22 @@ public class Parser
     
     private ExpressionSyntax ParseExpression(int parentPrecedence = 0)
     {
-        var left = ParsePrimaryExpression();
+        ExpressionSyntax left;
+        var unaryOperatorPrecedence = Current.Kind.GetUnaryPrecedence();
+        if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence) //特别应对--1的情况（特别难找）
+        {
+            var operatorToken = NextToken();
+            var operand = ParseExpression(unaryOperatorPrecedence);
+            left = new UnaryExpressionSyntax(operatorToken, operand);
+        }
+        else
+        {
+            left = ParsePrimaryExpression();
+        }
+        
         while (true)
         {
-            var precedence = GetBinaryOperatorPrecedence(Current.Kind);
+            var precedence = Current.Kind.GetBinaryPrecedence();
             if(precedence == 0 || precedence <= parentPrecedence)
                 break;
             var operatorToken = NextToken();
@@ -69,21 +81,6 @@ public class Parser
         }
         
         return left;
-    }
-
-    private static int GetBinaryOperatorPrecedence(SyntaxKind kind)
-    {
-        switch (kind)
-        {
-            case SyntaxKind.Plus:
-            case SyntaxKind.Minus:
-                return 1;
-            case SyntaxKind.Star:
-            case SyntaxKind.Slash:
-                return 2;
-            default:
-                return 0;
-        }
     }
     
     private SyntaxToken NextToken()

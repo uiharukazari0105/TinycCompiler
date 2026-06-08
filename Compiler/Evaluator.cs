@@ -21,6 +21,18 @@ public class Evaluator
     {
         if (node is LiteralExpressionSyntax { LiteralToken.Value: not null } n)
             return n.LiteralToken.Value;
+
+        if (node is UnaryExpressionSyntax u)
+        {
+            var operand = EvaluateExpression(u.Operand);
+            if(u.OperatorToken.Kind == SyntaxKind.Plus)
+                return operand; 
+            if(u.OperatorToken.Kind == SyntaxKind.Minus)
+                return -operand;
+            new LogDefinition(LogLevel.Error, $"不合理的一元运算符 <{u.OperatorToken.Kind}>", true).Raise();
+            return 0;
+        }
+        
         if (node is BinaryExpressionSyntax b)
         {
             var left = EvaluateExpression(b.Left);
