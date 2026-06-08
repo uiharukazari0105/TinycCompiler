@@ -52,20 +52,23 @@ public class Lexer
             return new SyntaxToken(SyntaxKind.WhiteSpace, start, text);
         }
 
-        if (Current == '+') //处理运算符
-            return new SyntaxToken(SyntaxKind.Plus, _position++, "+");
-        if(Current == '-')
-            return new SyntaxToken(SyntaxKind.Minus, _position++, "-");
-        if(Current == '*')
-            return new SyntaxToken(SyntaxKind.Star, _position++, "*");
-        if(Current == '/')
-            return new SyntaxToken(SyntaxKind.Slash, _position++, "/");
-        if(Current == '(')
-            return new SyntaxToken(SyntaxKind.OpenParenthesis, _position++, "(");
-        if(Current == ')')
-            return new SyntaxToken(SyntaxKind.CloseParenthesis, _position++, ")");
-        
-        Diagnostics.Add(new LogDefinition(LogLevel.Error, $"非预期令牌 <{Current}>", true));
-        return new SyntaxToken(SyntaxKind.Bad, _position++, _text[_position-1].ToString());
+        switch (Current) //处理运算符
+        {
+            case '+':
+                return new SyntaxToken(SyntaxKind.Plus, _position++, "+");
+            case '-':
+                return new SyntaxToken(SyntaxKind.Minus, _position++, "-");
+            case '*':
+                return new SyntaxToken(SyntaxKind.Star, _position++, "*");
+            case '/':
+                return new SyntaxToken(SyntaxKind.Slash, _position++, "/");
+            case '(':
+                return new SyntaxToken(SyntaxKind.OpenParenthesis, _position++, "(");
+            case ')':
+                return new SyntaxToken(SyntaxKind.CloseParenthesis, _position++, ")");
+            default:
+                Diagnostics.Add(new LogDefinition(LogLevel.Error, $"非预期令牌 <{Current}>", true));
+                return new SyntaxToken(SyntaxKind.Bad, _position++, _text[_position-1].ToString());
+        }
     }
 }

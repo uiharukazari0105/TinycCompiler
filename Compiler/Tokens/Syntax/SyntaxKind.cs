@@ -2,6 +2,7 @@ namespace Compiler.Tokens.Syntax;
 
 public enum SyntaxKind
 {
+    //Tokens
     Number,
     WhiteSpace,
     Plus,
@@ -12,7 +13,9 @@ public enum SyntaxKind
     CloseParenthesis,
     Bad,
     EndOfFile,
+    
+    //Expressions
     BinaryExpression,
-    NumberExpression,
+    LiteralExpression,
     ParenthesizedExpression
 }

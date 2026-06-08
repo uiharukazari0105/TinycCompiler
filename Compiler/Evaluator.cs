@@ -19,8 +19,8 @@ public class Evaluator
 
     private int EvaluateExpression(ExpressionSyntax node)
     {
-        if (node is NumberExpressionSyntax { NumberToken.Value: not null } n)
-            return n.NumberToken.Value;
+        if (node is LiteralExpressionSyntax { LiteralToken.Value: not null } n)
+            return n.LiteralToken.Value;
         if (node is BinaryExpressionSyntax b)
         {
             var left = EvaluateExpression(b.Left);
