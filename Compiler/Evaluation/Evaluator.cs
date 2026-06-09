@@ -2,15 +2,17 @@ using Compiler.Output;
 using Compiler.Tokens.Binding;
 using Compiler.Tokens.Binding.Expression;
 
-namespace Compiler;
+namespace Compiler.Evaluation;
 
 public sealed class Evaluator
 {
     private readonly BoundExpression _root;
+    private readonly Dictionary<string, dynamic> _variables;
     
-    public Evaluator(BoundExpression root)
+    public Evaluator(BoundExpression root, Dictionary<string, dynamic> variables)
     {
         _root = root;
+        _variables = variables;
     }
 
     public dynamic Evaluate()
@@ -22,6 +24,18 @@ public sealed class Evaluator
     {
         if (node is BoundLiteralExpression n)
             return n.Value;
+
+        if (node is BoundVariableExpression v)
+        {
+            return _variables[v.Name];
+        }
+
+        if (node is BoundAssignmentExpression a)
+        {
+            var value = EvaluateExpression(a.Expression);
+            _variables[a.Name] = value;
+            return value;
+        }
 
         if (node is BoundUnaryExpression u)
         {

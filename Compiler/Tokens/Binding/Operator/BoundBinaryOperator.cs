@@ -39,9 +39,9 @@ public sealed class BoundBinaryOperator
         new(typeof(bool), SyntaxKind.Pipe, BoundBinaryOperatorKind.BitwiseOr),
         new(typeof(bool), SyntaxKind.DoublePipe, BoundBinaryOperatorKind.LogicalOr),
         new(typeof(int), SyntaxKind.DoubleEquals, typeof(int), typeof(bool), BoundBinaryOperatorKind.Equality),
-        new(typeof(int), SyntaxKind.AmpersandEquals, typeof(int), typeof(bool), BoundBinaryOperatorKind.Inequality),
+        new(typeof(int), SyntaxKind.ExclamationEquals, typeof(int), typeof(bool), BoundBinaryOperatorKind.Inequality),
         new(typeof(bool), SyntaxKind.DoubleEquals, BoundBinaryOperatorKind.Equality),
-        new(typeof(bool), SyntaxKind.AmpersandEquals, BoundBinaryOperatorKind.Inequality)
+        new(typeof(bool), SyntaxKind.ExclamationEquals, BoundBinaryOperatorKind.Inequality)
         
     ];
 

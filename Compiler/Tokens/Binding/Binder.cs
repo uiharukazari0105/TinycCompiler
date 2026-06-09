@@ -9,6 +9,13 @@ namespace Compiler.Tokens.Binding;
 public sealed class Binder
 {
     public List<LogDefinition> Diagnostics { get; } = [];
+    private readonly Dictionary<string, dynamic> _variables;
+
+    public Binder(Dictionary<string, dynamic> variables)
+    {
+        _variables = variables;
+    }
+    
     public BoundExpression BindExpression(ExpressionSyntax syntax)
     {
         switch (syntax.Kind)
@@ -21,6 +28,10 @@ public sealed class Binder
                 return BindBinaryExpression((BinaryExpressionSyntax)syntax);
             case SyntaxKind.ParenthesizedExpression:
                 return BindExpression(((ParenthesizedExpressionSyntax)syntax).Expression);
+            case SyntaxKind.NameExpression:
+                return BindNameExpression((NameExpressionSyntax)syntax);
+            case SyntaxKind.AssignmentExpression:
+                return BindAssignmentExpression((AssignmentExpressionSyntax)syntax);
         }
 
         Diagnostics.Add(new LogDefinition(LogLevel.Error, $"没有这样的表达式类型 <{syntax.Kind}>", true));
@@ -56,5 +67,25 @@ public sealed class Binder
             return boundLeft;
         }
         return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
+    }
+    
+    private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
+    {
+        var name = syntax.IdentifierToken.Text;
+        if (!_variables.TryGetValue(name, out var value))
+        {
+            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"变量 <{name}> 在该作用域没有声明", true));
+            return new BoundLiteralExpression(0);
+        }
+
+        var type = value.GetType() ?? typeof(object);
+        return new BoundVariableExpression(name, type);
+    }
+    
+    private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax syntax)
+    {
+        var name = syntax.IdentifierToken.Text;
+        var boundExpression = BindExpression(syntax.Expression);
+        return new BoundAssignmentExpression(name, boundExpression);
     }
 }

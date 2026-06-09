@@ -48,18 +48,17 @@ public class Parser
         switch (Current.Kind)
         {
             case SyntaxKind.OpenParenthesis:
-            {
                 var left = NextToken();
                 var expression = ParseExpression();
                 var right = Match(SyntaxKind.CloseParenthesis);
                 return new ParenthesizedExpressionSyntax(left, expression, right);
-            }
             case SyntaxKind.TrueKeyword or SyntaxKind.FalseKeyword:
-            {
                 var keywordToken = NextToken();
                 var value = keywordToken.Kind == SyntaxKind.TrueKeyword;
                 return new LiteralExpressionSyntax(keywordToken, value);
-            }
+            case SyntaxKind.Identifier:
+                var identifierToken = NextToken();
+                return new NameExpressionSyntax(identifierToken);
             default:
             {
                 var numberToken = Match(SyntaxKind.Number);
@@ -67,15 +66,33 @@ public class Parser
             }
         }
     }
+
+    private ExpressionSyntax ParseExpression()
+    {
+        return ParseAssignmentExpression();
+    }
     
-    private ExpressionSyntax ParseExpression(int parentPrecedence = 0)
+    private ExpressionSyntax ParseAssignmentExpression()
+    {
+        if (Current.Kind == SyntaxKind.Identifier && Peek(1).Kind == SyntaxKind.Equals)
+        {
+            var identifierToken = NextToken();
+            var operatorToken = NextToken();
+            var right = ParseAssignmentExpression();
+            return new AssignmentExpressionSyntax(identifierToken, operatorToken, right);
+        }
+
+        return ParseBinaryExpression();
+    }
+    
+    private ExpressionSyntax ParseBinaryExpression(int parentPrecedence = 0)
     {
         ExpressionSyntax left;
         var unaryOperatorPrecedence = Current.Kind.GetUnaryPrecedence();
         if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence) //特别应对--1的情况（特别难找）
         {
             var operatorToken = NextToken();
-            var operand = ParseExpression(unaryOperatorPrecedence);
+            var operand = ParseBinaryExpression(unaryOperatorPrecedence);
             left = new UnaryExpressionSyntax(operatorToken, operand);
         }
         else
@@ -89,7 +106,7 @@ public class Parser
             if(precedence == 0 || precedence <= parentPrecedence)
                 break;
             var operatorToken = NextToken();
-            var right = ParseExpression(precedence);
+            var right = ParseBinaryExpression(precedence);
             left = new BinaryExpressionSyntax(left, operatorToken, right);
         }
         

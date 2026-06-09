@@ -62,10 +62,10 @@ public class Lexer
             return new SyntaxToken(SyntaxKind.WhiteSpace, start, text);
         }
 
-        if (char.IsLetter(Current)) //处理布尔和关键字
+        if (char.IsLetter(Current) || Current == '_') //处理布尔和关键字
         {
             var start = _position;
-            while (char.IsLetter(Current))
+            while (char.IsLetter(Current) || Current == '_' || char.IsDigit(Current))
                 Next();
             var length = _position - start;
             var text = _text.Substring(start, length);
@@ -76,6 +76,8 @@ public class Lexer
         switch (Current) //处理运算符
         {
             case '+':
+                if(AHead == '+')
+                    return new SyntaxToken(SyntaxKind.DoublePlus, _position+=2, "++");
                 return new SyntaxToken(SyntaxKind.Plus, _position++, "+");
             case '-':
                 return new SyntaxToken(SyntaxKind.Minus, _position++, "-");
@@ -89,7 +91,7 @@ public class Lexer
                 return new SyntaxToken(SyntaxKind.CloseParenthesis, _position++, ")");
             case '!':
                 if (AHead == '=')
-                    return new SyntaxToken(SyntaxKind.AmpersandEquals, _position += 2, "!=");
+                    return new SyntaxToken(SyntaxKind.ExclamationEquals, _position += 2, "!=");
                 return new SyntaxToken(SyntaxKind.Exclamation, _position++, "!");
             case '&':
                 if (AHead == '&')

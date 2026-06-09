@@ -6,6 +6,7 @@ public enum SyntaxKind
     Number,
     WhiteSpace,
     Plus,
+    DoublePlus,
     Minus,
     Star,
     Slash,
@@ -18,7 +19,7 @@ public enum SyntaxKind
     CloseParenthesis,
     Equals,
     DoubleEquals,
-    AmpersandEquals,
+    ExclamationEquals,
     Bad,
     EndOfFile,
     
@@ -27,6 +28,8 @@ public enum SyntaxKind
     LiteralExpression,
     ParenthesizedExpression,
     UnaryExpression,
+    NameExpression,
+    AssignmentExpression,
     
     //Keywords
     TrueKeyword,
@@ -44,7 +47,7 @@ public static class SyntaxKindExtensions
             {
                 SyntaxKind.Pipe or SyntaxKind.DoublePipe => 1,
                 SyntaxKind.Ampersand or SyntaxKind.DoubleAmpersand => 2,
-                SyntaxKind.DoubleEquals or SyntaxKind.AmpersandEquals => 3,
+                SyntaxKind.DoubleEquals or SyntaxKind.ExclamationEquals => 3,
                 SyntaxKind.Plus or SyntaxKind.Minus => 4,
                 SyntaxKind.Star or SyntaxKind.Slash => 5,
                 _ => 0
@@ -56,6 +59,7 @@ public static class SyntaxKindExtensions
             return kind switch
             {
                 SyntaxKind.Plus or SyntaxKind.Minus or SyntaxKind.Exclamation => 6,
+                SyntaxKind.DoublePlus => 7,
                 _ => 0
             };
         }

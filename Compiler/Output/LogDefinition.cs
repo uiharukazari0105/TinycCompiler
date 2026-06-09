@@ -5,13 +5,16 @@ public class LogDefinition
     public LogLevel Level { get; init; }
     public string Message { get; init; }
     
+    public TextSpan? Span { get; init; }
+    
     public bool Halt {get; init; }
     
-    public LogDefinition(LogLevel level, string message, bool halt = false)
+    public LogDefinition(LogLevel level, string message, bool halt = false, TextSpan? span = null)
     {
         Level = level;
         Message = message;
         Halt = halt;
+        Span = span;
     }
 
     public void Raise()
