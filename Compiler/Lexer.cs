@@ -88,6 +88,8 @@ public class Lexer
             case ')':
                 return new SyntaxToken(SyntaxKind.CloseParenthesis, _position++, ")");
             case '!':
+                if (AHead == '=')
+                    return new SyntaxToken(SyntaxKind.AmpersandEquals, _position += 2, "!=");
                 return new SyntaxToken(SyntaxKind.Exclamation, _position++, "!");
             case '&':
                 if (AHead == '&')
@@ -97,6 +99,10 @@ public class Lexer
                 if (AHead == '|')
                     return new SyntaxToken(SyntaxKind.DoublePipe, _position += 2, "||");
                 return new SyntaxToken(SyntaxKind.Pipe, _position++, "|");
+            case '=':
+                if(AHead == '=')
+                    return new SyntaxToken(SyntaxKind.DoubleEquals, _position += 2, "==");
+                return new SyntaxToken(SyntaxKind.Equals, _position++, "=");
             default:
                 Diagnostics.Add(new LogDefinition(LogLevel.Error, $"非预期令牌 <{Current}>", true));
                 return new SyntaxToken(SyntaxKind.Bad, _position++, _text[_position-1].ToString());

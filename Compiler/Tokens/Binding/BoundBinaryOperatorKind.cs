@@ -9,5 +9,7 @@ public enum BoundBinaryOperatorKind
     BitwiseAnd,
     LogicalAnd,
     BitwiseOr,
-    LogicalOr
+    LogicalOr,
+    Equality,
+    Inequality
 }

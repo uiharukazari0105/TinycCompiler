@@ -63,6 +63,10 @@ public sealed class Evaluator
                     return left | right;
                 case BoundBinaryOperatorKind.LogicalOr:
                     return left || right;
+                case BoundBinaryOperatorKind.Equality:
+                    return left == right;
+                case BoundBinaryOperatorKind.Inequality:
+                    return left != right;
                 default:
                     new LogDefinition(LogLevel.Error, $"非预期运算符 <{b.Operator.Kind}>", true).Raise();
                     return 0;
