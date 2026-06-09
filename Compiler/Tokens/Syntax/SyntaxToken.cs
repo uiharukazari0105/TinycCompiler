@@ -1,3 +1,5 @@
+using Compiler.Tokens.Syntax.Expression;
+
 namespace Compiler.Tokens.Syntax;
 
 public class SyntaxToken: SyntaxNode 

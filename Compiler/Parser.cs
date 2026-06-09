@@ -1,5 +1,6 @@
 using Compiler.Output;
 using Compiler.Tokens.Syntax;
+using Compiler.Tokens.Syntax.Expression;
 
 namespace Compiler;
 
@@ -44,15 +45,27 @@ public class Parser
     
     private ExpressionSyntax ParsePrimaryExpression()
     {
-        if (Current.Kind == SyntaxKind.OpenParenthesis)
+        switch (Current.Kind)
         {
-            var left = NextToken();
-            var expression = ParseExpression();
-            var right = Match(SyntaxKind.CloseParenthesis);
-            return new ParenthesizedExpressionSyntax(left, expression, right);
+            case SyntaxKind.OpenParenthesis:
+            {
+                var left = NextToken();
+                var expression = ParseExpression();
+                var right = Match(SyntaxKind.CloseParenthesis);
+                return new ParenthesizedExpressionSyntax(left, expression, right);
+            }
+            case SyntaxKind.TrueKeyword or SyntaxKind.FalseKeyword:
+            {
+                var keywordToken = NextToken();
+                var value = keywordToken.Kind == SyntaxKind.TrueKeyword;
+                return new LiteralExpressionSyntax(keywordToken, value);
+            }
+            default:
+            {
+                var numberToken = Match(SyntaxKind.Number);
+                return new LiteralExpressionSyntax(numberToken);
+            }
         }
-        var numberToken = Match(SyntaxKind.Number);
-        return new LiteralExpressionSyntax(numberToken);
     }
     
     private ExpressionSyntax ParseExpression(int parentPrecedence = 0)

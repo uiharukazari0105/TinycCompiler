@@ -1,4 +1,4 @@
-namespace Compiler.Tokens.Syntax;
+namespace Compiler.Tokens.Syntax.Expression;
 
 public sealed class UnaryExpressionSyntax: ExpressionSyntax
 {

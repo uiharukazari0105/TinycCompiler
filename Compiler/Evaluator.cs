@@ -1,61 +1,74 @@
 using Compiler.Output;
-using Compiler.Tokens.Syntax;
+using Compiler.Tokens.Binding;
+using Compiler.Tokens.Binding.Expression;
 
 namespace Compiler;
 
-public class Evaluator
+public sealed class Evaluator
 {
-    private readonly ExpressionSyntax _root;
+    private readonly BoundExpression _root;
     
-    public Evaluator(ExpressionSyntax root)
+    public Evaluator(BoundExpression root)
     {
         _root = root;
     }
 
-    public int Evaluate()
+    public dynamic Evaluate()
     {
         return EvaluateExpression(_root);
     }
 
-    private int EvaluateExpression(ExpressionSyntax node)
+    private dynamic EvaluateExpression(BoundExpression node)
     {
-        if (node is LiteralExpressionSyntax { LiteralToken.Value: not null } n)
-            return n.LiteralToken.Value;
+        if (node is BoundLiteralExpression n)
+            return n.Value;
 
-        if (node is UnaryExpressionSyntax u)
+        if (node is BoundUnaryExpression u)
         {
             var operand = EvaluateExpression(u.Operand);
-            if(u.OperatorToken.Kind == SyntaxKind.Plus)
-                return operand; 
-            if(u.OperatorToken.Kind == SyntaxKind.Minus)
-                return -operand;
-            new LogDefinition(LogLevel.Error, $"不合理的一元运算符 <{u.OperatorToken.Kind}>", true).Raise();
-            return 0;
+            switch (u.Operator.Kind)
+            {
+                case BoundUnaryOperatorKind.Identity:
+                    return operand;
+                case BoundUnaryOperatorKind.Negation:
+                    return -operand;
+                case BoundUnaryOperatorKind.LogicalNegation:
+                    return !operand;
+                default:
+                    new LogDefinition(LogLevel.Error, $"不合理的一元运算符 <{u.Operator.Kind}>", true).Raise();
+                    return 0;
+            }
         }
         
-        if (node is BinaryExpressionSyntax b)
+        if (node is BoundBinaryExpression b)
         {
             var left = EvaluateExpression(b.Left);
             var right = EvaluateExpression(b.Right);
 
-            switch (b.OperatorToken.Kind)
+            switch (b.Operator.Kind)
             {
-                case SyntaxKind.Plus:
+                case BoundBinaryOperatorKind.Addition:
                     return left + right;
-                case SyntaxKind.Minus:
+                case BoundBinaryOperatorKind.Subtraction:
                     return left - right;
-                case SyntaxKind.Star:
+                case BoundBinaryOperatorKind.Multiplication:
                     return left * right;
-                case SyntaxKind.Slash:
+                case BoundBinaryOperatorKind.Division:
                     return left / right;
+                case BoundBinaryOperatorKind.BitwiseAnd:
+                    return left & right;
+                case BoundBinaryOperatorKind.LogicalAnd:
+                    return left && right;
+                case BoundBinaryOperatorKind.BitwiseOr:
+                    return left | right;
+                case BoundBinaryOperatorKind.LogicalOr:
+                    return left || right;
                 default:
-                    new LogDefinition(LogLevel.Error, $"非预期运算符 <{b.OperatorToken.Kind}>", true).Raise();
+                    new LogDefinition(LogLevel.Error, $"非预期运算符 <{b.Operator.Kind}>", true).Raise();
                     return 0;
             }
         }
-
-        if (node is ParenthesizedExpressionSyntax p)
-            return EvaluateExpression(p.Expression);
+        
         new LogDefinition(LogLevel.Error, $"无法解析的节点 <{node.Kind}>", true).Raise();
         return 0;
     }

@@ -9,6 +9,11 @@ public enum SyntaxKind
     Minus,
     Star,
     Slash,
+    Exclamation,
+    Ampersand,
+    DoubleAmpersand,
+    Pipe,
+    DoublePipe,
     OpenParenthesis,
     CloseParenthesis,
     Bad,
@@ -18,7 +23,12 @@ public enum SyntaxKind
     BinaryExpression,
     LiteralExpression,
     ParenthesizedExpression,
-    UnaryExpression
+    UnaryExpression,
+    
+    //Keywords
+    TrueKeyword,
+    FalseKeyword,
+    Identifier
 }
 
 public static class SyntaxKindExtensions
@@ -29,8 +39,10 @@ public static class SyntaxKindExtensions
         {
             return kind switch
             {
-                SyntaxKind.Plus or SyntaxKind.Minus => 1,
-                SyntaxKind.Star or SyntaxKind.Slash => 2,
+                SyntaxKind.Pipe or SyntaxKind.DoublePipe => 1,
+                SyntaxKind.Ampersand or SyntaxKind.DoubleAmpersand => 2,
+                SyntaxKind.Plus or SyntaxKind.Minus => 3,
+                SyntaxKind.Star or SyntaxKind.Slash => 4,
                 _ => 0
             };
         }
@@ -39,7 +51,7 @@ public static class SyntaxKindExtensions
         {
             return kind switch
             {
-                SyntaxKind.Plus or SyntaxKind.Minus => 3,
+                SyntaxKind.Plus or SyntaxKind.Minus or SyntaxKind.Exclamation => 5,
                 _ => 0
             };
         }

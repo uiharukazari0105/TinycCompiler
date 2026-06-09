@@ -13,9 +13,19 @@ public class Lexer
     {
         _text = text;
     }
+
+    private char Current => Peek();
+    private char AHead => Peek(1);
     
-    private char Current => _position >= _text.Length ? '\0' : _text[_position];
     private void Next() => _position++;
+
+    private char Peek(int offset = 0)
+    {
+        var index = _position + offset;
+        if (index >= _text.Length)
+            return '\0';
+        return _text[index];
+    }
     
     public SyntaxToken NextToken()
     {
@@ -52,6 +62,17 @@ public class Lexer
             return new SyntaxToken(SyntaxKind.WhiteSpace, start, text);
         }
 
+        if (char.IsLetter(Current)) //处理布尔和关键字
+        {
+            var start = _position;
+            while (char.IsLetter(Current))
+                Next();
+            var length = _position - start;
+            var text = _text.Substring(start, length);
+            var kind = SyntaxFact.GetKeywordKind(text);
+            return new SyntaxToken(kind, start, text);
+        }
+
         switch (Current) //处理运算符
         {
             case '+':
@@ -66,6 +87,16 @@ public class Lexer
                 return new SyntaxToken(SyntaxKind.OpenParenthesis, _position++, "(");
             case ')':
                 return new SyntaxToken(SyntaxKind.CloseParenthesis, _position++, ")");
+            case '!':
+                return new SyntaxToken(SyntaxKind.Exclamation, _position++, "!");
+            case '&':
+                if (AHead == '&')
+                    return new SyntaxToken(SyntaxKind.DoubleAmpersand, _position += 2, "&&");
+                return new SyntaxToken(SyntaxKind.Ampersand, _position++, "&");
+            case '|':
+                if (AHead == '|')
+                    return new SyntaxToken(SyntaxKind.DoublePipe, _position += 2, "||");
+                return new SyntaxToken(SyntaxKind.Pipe, _position++, "|");
             default:
                 Diagnostics.Add(new LogDefinition(LogLevel.Error, $"非预期令牌 <{Current}>", true));
                 return new SyntaxToken(SyntaxKind.Bad, _position++, _text[_position-1].ToString());

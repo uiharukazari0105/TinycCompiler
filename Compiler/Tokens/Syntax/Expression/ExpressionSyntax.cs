@@ -1,4 +1,4 @@
-namespace Compiler.Tokens.Syntax;
+namespace Compiler.Tokens.Syntax.Expression;
 
 public abstract class ExpressionSyntax: SyntaxNode
 {

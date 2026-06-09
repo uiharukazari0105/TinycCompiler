@@ -1,4 +1,5 @@
 ﻿using Compiler.Output;
+using Compiler.Tokens.Binding;
 
 namespace Compiler;
 
@@ -12,7 +13,10 @@ public static class Program
 
         var parser = new Parser(compileProcess.InputFileReader.ReadToEnd());
         var syntaxTree = parser.Parse();
+        var binder = new Binder();
+        var boundExpression = binder.BindExpression(syntaxTree.Root);
         Logger.RaiseMany(parser.Diagnostics);
+        Logger.RaiseMany(binder.Diagnostics);
         
         
         var color = Console.ForegroundColor;
@@ -20,7 +24,7 @@ public static class Program
         PrettyPrint.Out(syntaxTree.Root);
         Console.ForegroundColor = color;
 
-        var evaluator = new Evaluator(syntaxTree.Root);
+        var evaluator = new Evaluator(boundExpression);
         Console.WriteLine(evaluator.Evaluate());
         
         compileProcess.Dispose();

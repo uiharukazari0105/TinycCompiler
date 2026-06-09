@@ -4,8 +4,8 @@ namespace Compiler;
 
 public class CompileProcess: IDisposable
 {
-    public StreamReader InputFileReader { get; init; }
-    public StreamWriter OutputFileWriter { get; init; }
+    public StreamReader InputFileReader { get; }
+    public StreamWriter OutputFileWriter { get; }
     
     private readonly FileStream _inputFile;
     private readonly FileStream _outputFile;
