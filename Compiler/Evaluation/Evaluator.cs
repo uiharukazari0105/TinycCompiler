@@ -11,7 +11,7 @@ public sealed class Evaluator
     private readonly BoundStatement _root;
     private readonly Dictionary<VariableSymbol, dynamic> _variables;
 
-    private dynamic _lastValue;
+    private dynamic? _lastValue;
     
     public Evaluator(BoundStatement root, Dictionary<VariableSymbol, dynamic> variables)
     {
@@ -19,7 +19,7 @@ public sealed class Evaluator
         _variables = variables;
     }
 
-    public dynamic Evaluate()
+    public dynamic? Evaluate()
     {
         EvaluateStatement(_root);
         return _lastValue;
@@ -143,6 +143,14 @@ public sealed class Evaluator
                 return left == right;
             case BoundBinaryOperatorKind.Inequality:
                 return left != right;
+            case BoundBinaryOperatorKind.Less:
+                return left < right;
+            case BoundBinaryOperatorKind.LessOrEquals:
+                return left <= right;
+            case BoundBinaryOperatorKind.Greater:
+                return left > right;
+            case BoundBinaryOperatorKind.GreaterOrEquals:
+                return left >= right;
             default:
                 new LogDefinition(LogLevel.Error, $"非预期运算符 <{b.Operator.Kind}>", true).Raise();
                 return 0;

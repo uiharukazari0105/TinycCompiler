@@ -22,6 +22,10 @@ public enum SyntaxKind
     Equals,
     DoubleEquals,
     ExclamationEquals,
+    LessOrEquals,
+    Less,
+    GreaterOrEquals,
+    Greater,
     Bad,
     EndOfFile,
     
@@ -56,7 +60,9 @@ public static class SyntaxKindExtensions
             {
                 SyntaxKind.Pipe or SyntaxKind.DoublePipe => 1,
                 SyntaxKind.Ampersand or SyntaxKind.DoubleAmpersand => 2,
-                SyntaxKind.DoubleEquals or SyntaxKind.ExclamationEquals => 3,
+                SyntaxKind.DoubleEquals or SyntaxKind.ExclamationEquals or 
+                SyntaxKind.Less or SyntaxKind.LessOrEquals or 
+                SyntaxKind.Greater or SyntaxKind.GreaterOrEquals => 3,
                 SyntaxKind.Plus or SyntaxKind.Minus => 4,
                 SyntaxKind.Star or SyntaxKind.Slash => 5,
                 _ => 0

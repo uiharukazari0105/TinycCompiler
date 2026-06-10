@@ -11,5 +11,9 @@ public enum BoundBinaryOperatorKind
     BitwiseOr,
     LogicalOr,
     Equality,
-    Inequality
+    Inequality,
+    Less,
+    LessOrEquals,
+    Greater,
+    GreaterOrEquals
 }

@@ -10,9 +10,9 @@ public class CompileProcess: IDisposable
 {
     public StreamReader InputFileReader { get; }
     public StreamWriter OutputFileWriter { get; }
-    public SyntaxTree SyntaxTree { get; set; }
+    public SyntaxTree? SyntaxTree { get; set; }
 
-    public BoundGlobalScope? GlobalScope { get; set; } = null;
+    public BoundGlobalScope? GlobalScope { get; set; }
 
     public Dictionary<VariableSymbol, dynamic> Variables { get; } = new();
     

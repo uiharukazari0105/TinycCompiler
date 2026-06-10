@@ -41,8 +41,11 @@ public sealed class BoundBinaryOperator
         new(typeof(int), SyntaxKind.DoubleEquals, typeof(int), typeof(bool), BoundBinaryOperatorKind.Equality),
         new(typeof(int), SyntaxKind.ExclamationEquals, typeof(int), typeof(bool), BoundBinaryOperatorKind.Inequality),
         new(typeof(bool), SyntaxKind.DoubleEquals, BoundBinaryOperatorKind.Equality),
-        new(typeof(bool), SyntaxKind.ExclamationEquals, BoundBinaryOperatorKind.Inequality)
-        
+        new(typeof(bool), SyntaxKind.ExclamationEquals, BoundBinaryOperatorKind.Inequality),
+        new(typeof(int), SyntaxKind.Less, typeof(int), typeof(bool), BoundBinaryOperatorKind.Less),
+        new(typeof(int), SyntaxKind.LessOrEquals, typeof(int), typeof(bool), BoundBinaryOperatorKind.LessOrEquals),
+        new(typeof(int), SyntaxKind.Greater, typeof(int), typeof(bool), BoundBinaryOperatorKind.Greater),
+        new(typeof(int), SyntaxKind.GreaterOrEquals, typeof(int), typeof(bool), BoundBinaryOperatorKind.GreaterOrEquals)
     ];
 
     public static BoundBinaryOperator? Bind(Type leftType, SyntaxKind operatorTokenKind, Type rightType)
