@@ -67,6 +67,10 @@ public sealed class Binder
                 return BindIfStatement((IfStatementSyntax)syntax);
             case SyntaxKind.WhileStatement:
                 return BindWhileStatement((WhileStatementSyntax)syntax);
+            case SyntaxKind.ForStatement:
+                return BindForStatement((ForStatementSyntax)syntax);
+            case SyntaxKind.EmptyStatement:
+                return new BoundEmptyStatement();
         }
         Diagnostics.Add(new LogDefinition(LogLevel.Error, $"没有这样的表达式 <{syntax.Kind}>", true));
         throw new Exception($"没有这样的表达式 <{syntax.Kind}>");
@@ -120,6 +124,21 @@ public sealed class Binder
         var condition = BindExpression(syntax.Condition, typeof(bool));
         var statement = BindStatement(syntax.Statement);
         return new BoundWhileStatement(condition, statement);
+    }
+    
+    private BoundStatement BindForStatement(ForStatementSyntax syntax)
+    {
+        _scope = new BoundScope(_scope);
+        List<BoundStatement> initializers = [];
+        foreach (var initializer in syntax.Initializers)
+            initializers.Add(BindStatement(initializer));
+        var condition = syntax.Condition is null?null:BindExpression(syntax.Condition, typeof(bool));
+        List<BoundStatement> stepStatements = [];
+        foreach (var stepStatement in syntax.StepStatements)
+            stepStatements.Add(BindStatement(stepStatement));
+        var statement = BindStatement(syntax.ThenStatement);
+        _scope = _scope.Parent!;
+        return new BoundForStatement(initializers, condition, stepStatements, statement);
     }
 
     private BoundExpression BindExpression(ExpressionSyntax syntax)

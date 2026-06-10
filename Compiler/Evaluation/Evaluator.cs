@@ -44,6 +44,11 @@ public sealed class Evaluator
             case BoundNodeKind.WhileStatement:
                 EvaluateWhileStatement((BoundWhileStatement)node);
                 break;
+            case BoundNodeKind.ForStatement:
+                EvaluateForStatement((BoundForStatement)node);
+                break;
+            case BoundNodeKind.EmptyStatement:
+                break;
             default:
                 new LogDefinition(LogLevel.Error, $"无法解析的表达式 <{node.Kind}>", true).Raise();
                 break;
@@ -81,6 +86,18 @@ public sealed class Evaluator
     {
         while ((bool)EvaluateExpression(node.Condition))
             EvaluateStatement(node.Statement);
+    }
+    
+    private void EvaluateForStatement(BoundForStatement node)
+    {
+        foreach (var initializer in node.Initializers)
+            EvaluateStatement(initializer);
+        for (; node.Condition is null?true:EvaluateExpression(node.Condition);)
+        {
+            EvaluateStatement(node.Statement);
+            foreach (var statement in node.StepStatements)
+                EvaluateStatement(statement);
+        }
     }
 
     private dynamic EvaluateExpression(BoundExpression node)

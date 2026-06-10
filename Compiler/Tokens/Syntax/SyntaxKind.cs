@@ -28,6 +28,7 @@ public enum SyntaxKind
     Greater,
     Bad,
     EndOfFile,
+    Comma,
     
     //Expressions
     BinaryExpression,
@@ -37,6 +38,7 @@ public enum SyntaxKind
     NameExpression,
     AssignmentExpression,
     CompilationUnit,
+    Semicolon,
     
     //Keywords
     TrueKeyword,
@@ -54,7 +56,9 @@ public enum SyntaxKind
     VariableDeclarationStatement,
     IfStatement,
     ElseClause,
-    WhileStatement
+    WhileStatement,
+    ForStatement,
+    EmptyStatement
 }
 
 public static class SyntaxKindExtensions

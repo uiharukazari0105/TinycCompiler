@@ -117,6 +117,10 @@ public class Lexer
                 if (AHead == '=')
                     return new SyntaxToken(SyntaxKind.GreaterOrEquals, _position += 2, "<=");
                 return new SyntaxToken(SyntaxKind.Greater, _position++, "<");
+            case ';':
+                return new SyntaxToken(SyntaxKind.Semicolon, _position++, ";");
+            case ',':
+                return new SyntaxToken(SyntaxKind.Comma, _position++, ",");
             default:
                 Diagnostics.Add(new LogDefinition(LogLevel.Error, $"非预期令牌 <{Current}>", true));
                 return new SyntaxToken(SyntaxKind.Bad, _position++, _text[_position-1].ToString());

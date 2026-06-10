@@ -36,17 +36,34 @@ public class Parser
         return new CompilationUnitSyntax(statement, endOfFileToken);
     }
 
-    private StatementSyntax ParseStatement()
+    private StatementSyntax ParseStatement(bool enableMatchEndLine = true)
     {
-        if (Current.Kind == SyntaxKind.OpenBrace)
-            return ParseBlockStatement();
-        if (Current.Kind == SyntaxKind.IntKeyword)
-            return ParseVariableDeclarationStatement();
-        if (Current.Kind == SyntaxKind.IfKeyWord)
-            return ParseIfStatement();
-        if (Current.Kind == SyntaxKind.WhileKeyword)
-            return ParseWhileKeyword();
-        return ParseExpressionStatement();
+        StatementSyntax result;
+        bool matchEndLine = false;
+        
+        if (Current.Kind == SyntaxKind.Semicolon)
+            result = new EmptyStatementSyntax(Match(SyntaxKind.Semicolon));
+        else if (Current.Kind == SyntaxKind.OpenBrace)
+            result = ParseBlockStatement();
+        else if (Current.Kind == SyntaxKind.IntKeyword)
+        {
+            result = ParseVariableDeclarationStatement();
+            matchEndLine = true;
+        }
+        else if (Current.Kind == SyntaxKind.IfKeyWord)
+            result = ParseIfStatement();
+        else if (Current.Kind == SyntaxKind.WhileKeyword)
+            result = ParseWhileKeyword();
+        else if (Current.Kind == SyntaxKind.ForKeyword)
+            result = ParseForKeyword();
+        else
+        {
+            result = ParseExpressionStatement();
+            matchEndLine = true;
+        }
+        if(enableMatchEndLine && matchEndLine)
+            Match(SyntaxKind.Semicolon);
+        return result;
     }
 
     private StatementSyntax ParseBlockStatement()
@@ -66,7 +83,7 @@ public class Parser
     private ExpressionStatementSyntax ParseExpressionStatement()
     {
         var expression = ParseExpression();
-        return new  ExpressionStatementSyntax(expression); 
+        return new ExpressionStatementSyntax(expression); 
     }
 
     private StatementSyntax ParseVariableDeclarationStatement()
@@ -82,9 +99,9 @@ public class Parser
     {
         var keyword = Match(SyntaxKind.IfKeyWord);
         var condition = ParseExpression();
-        var statements = ParseStatement();
+        var statement = ParseStatement();
         var elseClause = ParseElseClause();
-        return new IfStatementSyntax(keyword, condition, statements, elseClause);
+        return new IfStatementSyntax(keyword, condition, statement, elseClause);
     }
 
     private ElseClauseSyntax? ParseElseClause()
@@ -92,16 +109,45 @@ public class Parser
         if (Current.Kind != SyntaxKind.ElseKeyword)
             return null;
         var keyword = Match(SyntaxKind.ElseKeyword);
-        var statements = ParseStatement();
-        return  new ElseClauseSyntax(keyword, statements);
+        var statement = ParseStatement();
+        return  new ElseClauseSyntax(keyword, statement);
     }
     
     private StatementSyntax ParseWhileKeyword()
     {
         var keyword =  Match(SyntaxKind.WhileKeyword);
         var condition = ParseExpression();
-        var statements = ParseStatement();
-        return new WhileStatementSyntax(keyword, condition, statements);
+        var statement = ParseStatement();
+        return new WhileStatementSyntax(keyword, condition, statement);
+    }
+    
+    private StatementSyntax ParseForKeyword()
+    {
+        var keyword = Match(SyntaxKind.ForKeyword);
+        var openParenthesis = Match(SyntaxKind.OpenParenthesis);
+        
+        List<StatementSyntax> initializers = [];
+        if (Current.Kind != SyntaxKind.Semicolon)
+            do
+            {
+                if(Current.Kind == SyntaxKind.Comma)
+                    Match(SyntaxKind.Comma);
+                initializers.Add(ParseStatement(false));
+            } while (Current.Kind != SyntaxKind.Semicolon);
+        Match(SyntaxKind.Semicolon);
+        var condition = Current.Kind == SyntaxKind.Semicolon? null: ParseExpression();
+        Match(SyntaxKind.Semicolon);
+        List<StatementSyntax> stepStatements = [];
+        if(Current.Kind != SyntaxKind.CloseParenthesis)
+            do
+            {
+                if(Current.Kind == SyntaxKind.Comma)
+                    Match(SyntaxKind.Comma);
+                stepStatements.Add(ParseStatement(false));
+            }while (Current.Kind != SyntaxKind.CloseParenthesis);
+        var closeParenthesisToken = Match(SyntaxKind.CloseParenthesis);
+        var statement =  ParseStatement();
+        return new ForStatementSyntax(keyword, openParenthesis, initializers, condition, stepStatements, closeParenthesisToken, statement);
     }
 
     private SyntaxToken Match(SyntaxKind kind)
