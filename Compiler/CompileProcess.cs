@@ -1,5 +1,6 @@
 using Compiler.Evaluation;
 using Compiler.Output;
+using Compiler.Tokens;
 using Compiler.Tokens.Binding;
 
 namespace Compiler;
@@ -9,7 +10,7 @@ public class CompileProcess: IDisposable
     public StreamReader InputFileReader { get; }
     public StreamWriter OutputFileWriter { get; }
 
-    public Dictionary<string, dynamic> Variables { get; } = new();
+    public Dictionary<VariableSymbol, dynamic> Variables { get; } = new();
     
     private readonly FileStream _inputFile;
     private readonly FileStream _outputFile;

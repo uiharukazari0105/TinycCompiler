@@ -48,28 +48,47 @@ public class Parser
         switch (Current.Kind)
         {
             case SyntaxKind.OpenParenthesis:
-                var left = NextToken();
-                var expression = ParseExpression();
-                var right = Match(SyntaxKind.CloseParenthesis);
-                return new ParenthesizedExpressionSyntax(left, expression, right);
+                return ParseParenthesizedExpression();
             case SyntaxKind.TrueKeyword or SyntaxKind.FalseKeyword:
-                var keywordToken = NextToken();
-                var value = keywordToken.Kind == SyntaxKind.TrueKeyword;
-                return new LiteralExpressionSyntax(keywordToken, value);
+                return ParseBooleanLiteral();
+            case SyntaxKind.Number:
+                return ParseNumberLiteral();
             case SyntaxKind.Identifier:
-                var identifierToken = NextToken();
-                return new NameExpressionSyntax(identifierToken);
             default:
-            {
-                var numberToken = Match(SyntaxKind.Number);
-                return new LiteralExpressionSyntax(numberToken);
-            }
+                return ParseNameExpression();
         }
     }
 
     private ExpressionSyntax ParseExpression()
     {
         return ParseAssignmentExpression();
+    }
+    
+    private ExpressionSyntax ParseParenthesizedExpression()
+    {
+        var left = Match(SyntaxKind.OpenParenthesis);
+        var expression = ParseExpression();
+        var right = Match(SyntaxKind.CloseParenthesis);
+        return new ParenthesizedExpressionSyntax(left, expression, right);
+    }
+    
+    private ExpressionSyntax ParseBooleanLiteral()
+    {
+        var isTrue = Current.Kind == SyntaxKind.TrueKeyword;
+        var keywordToken = Match(isTrue? SyntaxKind.TrueKeyword : SyntaxKind.FalseKeyword);
+        return new LiteralExpressionSyntax(keywordToken, isTrue);
+    }
+    
+    private ExpressionSyntax ParseNameExpression()
+    {
+        var identifierToken = Match(SyntaxKind.Identifier);
+        return new NameExpressionSyntax(identifierToken);
+    }
+    
+    private ExpressionSyntax ParseNumberLiteral()
+    {
+        var numberToken = Match(SyntaxKind.Number);
+        return new LiteralExpressionSyntax(numberToken);
     }
     
     private ExpressionSyntax ParseAssignmentExpression()
@@ -96,9 +115,7 @@ public class Parser
             left = new UnaryExpressionSyntax(operatorToken, operand);
         }
         else
-        {
             left = ParsePrimaryExpression();
-        }
         
         while (true)
         {
@@ -109,7 +126,6 @@ public class Parser
             var right = ParseBinaryExpression(precedence);
             left = new BinaryExpressionSyntax(left, operatorToken, right);
         }
-        
         return left;
     }
     

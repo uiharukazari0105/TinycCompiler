@@ -9,9 +9,9 @@ namespace Compiler.Tokens.Binding;
 public sealed class Binder
 {
     public List<LogDefinition> Diagnostics { get; } = [];
-    private readonly Dictionary<string, dynamic> _variables;
+    private readonly Dictionary<VariableSymbol, dynamic> _variables;
 
-    public Binder(Dictionary<string, dynamic> variables)
+    public Binder(Dictionary<VariableSymbol, dynamic> variables)
     {
         _variables = variables;
     }
@@ -72,20 +72,29 @@ public sealed class Binder
     private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
     {
         var name = syntax.IdentifierToken.Text;
-        if (!_variables.TryGetValue(name, out var value))
+        
+        var variable = _variables.Keys.FirstOrDefault(v=>v.Name == name);
+        
+        if (variable is null)
         {
             Diagnostics.Add(new LogDefinition(LogLevel.Error, $"变量 <{name}> 在该作用域没有声明", true));
             return new BoundLiteralExpression(0);
         }
-
-        var type = value.GetType() ?? typeof(object);
-        return new BoundVariableExpression(name, type);
+        
+        return new BoundVariableExpression(variable);
     }
     
     private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax syntax)
     {
         var name = syntax.IdentifierToken.Text;
         var boundExpression = BindExpression(syntax.Expression);
-        return new BoundAssignmentExpression(name, boundExpression);
+        
+        // var existingVariable = _variables.Keys.FirstOrDefault(v => v.Name == name);
+        // if (existingVariable is not null)
+        //     _variables.Remove(existingVariable);
+        
+        var variable = new VariableSymbol(name, boundExpression.Type);
+        
+        return new BoundAssignmentExpression(variable, boundExpression);
     }
 }
