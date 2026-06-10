@@ -2,6 +2,7 @@ using Compiler.Evaluation;
 using Compiler.Output;
 using Compiler.Tokens;
 using Compiler.Tokens.Binding;
+using Compiler.Tokens.Syntax;
 
 namespace Compiler;
 
@@ -9,6 +10,9 @@ public class CompileProcess: IDisposable
 {
     public StreamReader InputFileReader { get; }
     public StreamWriter OutputFileWriter { get; }
+    public SyntaxTree SyntaxTree { get; set; }
+
+    public BoundGlobalScope? GlobalScope { get; set; } = null;
 
     public Dictionary<VariableSymbol, dynamic> Variables { get; } = new();
     
@@ -41,21 +45,20 @@ public class CompileProcess: IDisposable
 
     public EvaluationResult Evaluate(string? input = null)
     {
-        var parser = new Parser(input??InputFileReader.ReadToEnd());
-        var syntaxTree = parser.Parse();
-        
-        var binder = new Binder(Variables);
-        var boundExpression = binder.BindExpression(syntaxTree.Root);
+        SyntaxTree = new SyntaxTree(input ?? InputFileReader.ReadToEnd());
+        GlobalScope = Binder.BindGlobalScope(GlobalScope ,SyntaxTree.Root);
+
+        var boundExpression = GlobalScope.Expression;
         var color = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Green;
-        PrettyPrint.Out(syntaxTree.Root);
+        PrettyPrint.Out(SyntaxTree.Root);
         Console.ForegroundColor = color;
 
         var evaluator = new Evaluator(boundExpression, Variables);
 
         List<LogDefinition> diagnostics = [];
-        diagnostics.AddRange(parser.Diagnostics);
-        diagnostics.AddRange(binder.Diagnostics);
+        diagnostics.AddRange(SyntaxTree.Diagnostics);
+        diagnostics.AddRange(GlobalScope.Diagnostics);
         return new EvaluationResult(diagnostics, evaluator.Evaluate());
     }
 

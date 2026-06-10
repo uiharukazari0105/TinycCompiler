@@ -9,11 +9,45 @@ namespace Compiler.Tokens.Binding;
 public sealed class Binder
 {
     public List<LogDefinition> Diagnostics { get; } = [];
-    private readonly Dictionary<VariableSymbol, dynamic> _variables;
 
-    public Binder(Dictionary<VariableSymbol, dynamic> variables)
+    private BoundScope _scope;
+
+    public static BoundGlobalScope BindGlobalScope(BoundGlobalScope? previous, CompilationUnitSyntax syntax)
     {
-        _variables = variables;
+        var parentScope = CreateParentScopes(previous);
+        var binder = new Binder(parentScope);
+        var expression = binder.BindExpression(syntax.Expression);
+        var variables = binder._scope.GetDeclaredVariables();
+        var diagnostics = binder.Diagnostics;
+        return new BoundGlobalScope(previous, diagnostics, variables, expression);
+    }
+
+    private static BoundScope? CreateParentScopes(BoundGlobalScope? previous)
+    {
+        var stack = new Stack<BoundGlobalScope>();
+        while (previous is not null)
+        {
+            stack.Push(previous);
+            previous = previous.Previous;
+        }
+        
+        BoundScope? parent = null;
+        while (stack.Count > 0)
+        {
+            var global = stack.Pop();
+            var scope = new BoundScope(parent);
+            foreach (var variable in global.Variables)
+                scope.TryDeclare(variable);
+            
+            parent = scope;
+        }
+        
+        return parent;
+    }
+    
+    public Binder(BoundScope? parent)
+    {
+        _scope = new BoundScope(parent);
     }
     
     public BoundExpression BindExpression(ExpressionSyntax syntax)
@@ -73,27 +107,24 @@ public sealed class Binder
     {
         var name = syntax.IdentifierToken.Text;
         
-        var variable = _variables.Keys.FirstOrDefault(v=>v.Name == name);
-        
-        if (variable is null)
+        if (!_scope.TryLookup(name, out var variable))
         {
             Diagnostics.Add(new LogDefinition(LogLevel.Error, $"变量 <{name}> 在该作用域没有声明", true));
             return new BoundLiteralExpression(0);
         }
         
-        return new BoundVariableExpression(variable);
+        return new BoundVariableExpression(variable!);
     }
     
     private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax syntax)
     {
         var name = syntax.IdentifierToken.Text;
         var boundExpression = BindExpression(syntax.Expression);
-        
-        // var existingVariable = _variables.Keys.FirstOrDefault(v => v.Name == name);
-        // if (existingVariable is not null)
-        //     _variables.Remove(existingVariable);
-        
         var variable = new VariableSymbol(name, boundExpression.Type);
+
+        if (!_scope.TryDeclare(variable))
+            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"变量 <{name}> 被重复声明", true));
+        
         
         return new BoundAssignmentExpression(variable, boundExpression);
     }

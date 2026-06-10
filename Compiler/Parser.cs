@@ -27,11 +27,11 @@ public class Parser
         Diagnostics.AddRange(lexer.Diagnostics);
     }
 
-    public SyntaxTree Parse()
+    public CompilationUnitSyntax ParseCompilationUnit()
     {
         var expression = ParseExpression();
         var endOfFileToken = Match(SyntaxKind.EndOfFile);
-        return new SyntaxTree(expression, endOfFileToken);
+        return new CompilationUnitSyntax(expression, endOfFileToken);
     }
     
 

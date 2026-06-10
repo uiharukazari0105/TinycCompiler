@@ -30,6 +30,7 @@ public enum SyntaxKind
     UnaryExpression,
     NameExpression,
     AssignmentExpression,
+    CompilationUnit,
     
     //Keywords
     TrueKeyword,
