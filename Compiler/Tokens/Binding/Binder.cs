@@ -63,6 +63,8 @@ public sealed class Binder
                 return BindExpressionStatement((ExpressionStatementSyntax)syntax);
             case SyntaxKind.VariableDeclarationStatement:
                 return BindVariableDeclaration((VariableDeclarationStatementSyntax)syntax);
+            case SyntaxKind.IfStatement:
+                return BindIfStatement((IfStatementSyntax)syntax);
         }
         Diagnostics.Add(new LogDefinition(LogLevel.Error, $"没有这样的表达式 <{syntax.Kind}>", true));
         throw new Exception($"没有这样的表达式 <{syntax.Kind}>");
@@ -102,6 +104,14 @@ public sealed class Binder
             Diagnostics.Add(new LogDefinition(LogLevel.Error, $"变量 <{name}> 被重复声明", true));
         return new BoundVariableDeclarationStatement(variable, initializer);
     }
+    
+    private BoundStatement BindIfStatement(IfStatementSyntax syntax)
+    {
+        var condition = BindExpression(syntax.Condition, typeof(bool));
+        var thanStatement = BindStatement(syntax.ThenStatement);
+        var elseStatement = syntax.ElseClause is null?null:BindStatement(syntax.ElseClause.ElseStatement);
+        return new BoundIfStatement(condition, thanStatement, elseStatement);
+    }
 
     private BoundExpression BindExpression(ExpressionSyntax syntax)
     {
@@ -123,6 +133,14 @@ public sealed class Binder
 
         Diagnostics.Add(new LogDefinition(LogLevel.Error, $"没有这样的表达式类型 <{syntax.Kind}>", true));
         throw new Exception($"没有这样的表达式类型 <{syntax.Kind}>");
+    }
+
+    private BoundExpression BindExpression(ExpressionSyntax syntax, Type expectedType)
+    {
+        var result = BindExpression(syntax);
+        if (result.Type != expectedType)
+            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"表达式 <{syntax.Kind}> 不能利用类型 <{result.Type}> 预期类型 <{expectedType}>", true));
+        return result;
     }
 
     private BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax)

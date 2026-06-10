@@ -10,13 +10,16 @@ public static class PrettyPrint
         var marker = isLast ? "└──" : "├──";
         Console.Write(indent);
         Console.Write(marker);
-        Console.Write(node.Kind);
+        
 
         if (node is SyntaxToken { Value: not null } token)
         {
+            Console.Write(node.Kind);
             Console.Write(" ");
             Console.Write(token.Text);
         }
+        else
+            Console.Write(node.Kind);
         
         Console.WriteLine();
         

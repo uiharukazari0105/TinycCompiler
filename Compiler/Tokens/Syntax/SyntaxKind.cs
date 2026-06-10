@@ -43,11 +43,17 @@ public enum SyntaxKind
     FalseKeyword,
     IntKeyword,
     Identifier,
+    IfKeyWord,
+    ElseKeyword,
+    ForKeyword,
+    WhileKeyword,
     
     //Statements
     BlockStatement,
     ExpressionStatement,
-    VariableDeclarationStatement
+    VariableDeclarationStatement,
+    IfStatement,
+    ElseClause
 }
 
 public static class SyntaxKindExtensions

@@ -38,6 +38,9 @@ public sealed class Evaluator
             case BoundNodeKind.ExpressionStatement:
                 EvaluateExpressionStatement((BoundExpressionStatement)node);
                 break;
+            case BoundNodeKind.IfStatement:
+                EvaluateIfStatement((BoundIfStatement)node);
+                break;
             default:
                 new LogDefinition(LogLevel.Error, $"无法解析的表达式 <{node.Kind}>", true).Raise();
                 break;
@@ -60,6 +63,15 @@ public sealed class Evaluator
     private void EvaluateExpressionStatement(BoundExpressionStatement node)
     {
         _lastValue = EvaluateExpression(node.Expression);
+    }
+    
+    private void EvaluateIfStatement(BoundIfStatement node)
+    {
+        var condition = (bool)EvaluateExpression(node.Condition);
+        if (condition)
+            EvaluateStatement(node.ThenStatement);
+        else if(node.ElseStatement is not null)
+            EvaluateStatement(node.ElseStatement);
     }
 
     private dynamic EvaluateExpression(BoundExpression node)

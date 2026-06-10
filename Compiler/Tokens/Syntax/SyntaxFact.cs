@@ -12,6 +12,14 @@ public static class SyntaxFact
                 return SyntaxKind.FalseKeyword;
             case "int":
                 return SyntaxKind.IntKeyword;
+            case "if":
+                return SyntaxKind.IfKeyWord;
+            case "else":
+                return SyntaxKind.ElseKeyword;
+            case "for":
+                return SyntaxKind.ForKeyword;
+            case "while":
+                return SyntaxKind.WhileKeyword;
             default:
                 return SyntaxKind.Identifier;
         }

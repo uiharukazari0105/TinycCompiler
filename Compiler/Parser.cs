@@ -42,6 +42,8 @@ public class Parser
             return ParseBlockStatement();
         if (Current.Kind == SyntaxKind.IntKeyword)
             return ParseVariableDeclarationStatement();
+        if (Current.Kind == SyntaxKind.IfKeyWord)
+            return ParseIfStatement();
         return ParseExpressionStatement();
     }
 
@@ -72,6 +74,24 @@ public class Parser
         var equals = Match(SyntaxKind.Equals);
         var initialize = ParseExpression();
         return new VariableDeclarationStatementSyntax(keyword, identifier, equals, initialize);
+    }
+    
+    private StatementSyntax ParseIfStatement()
+    {
+        var keyword = Match(SyntaxKind.IfKeyWord);
+        var condition = ParseExpression();
+        var statements = ParseStatement();
+        var elseClause = ParseElseClause();
+        return new IfStatementSyntax(keyword, condition, statements, elseClause);
+    }
+
+    private ElseClauseSyntax? ParseElseClause()
+    {
+        if (Current.Kind != SyntaxKind.ElseKeyword)
+            return null;
+        var keyword = Match(SyntaxKind.ElseKeyword);
+        var statements = ParseStatement();
+        return  new ElseClauseSyntax(keyword, statements);
     }
 
     private SyntaxToken Match(SyntaxKind kind)
