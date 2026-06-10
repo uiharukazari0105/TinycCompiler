@@ -53,7 +53,8 @@ public enum SyntaxKind
     ExpressionStatement,
     VariableDeclarationStatement,
     IfStatement,
-    ElseClause
+    ElseClause,
+    WhileStatement
 }
 
 public static class SyntaxKindExtensions

@@ -44,6 +44,8 @@ public class Parser
             return ParseVariableDeclarationStatement();
         if (Current.Kind == SyntaxKind.IfKeyWord)
             return ParseIfStatement();
+        if (Current.Kind == SyntaxKind.WhileKeyword)
+            return ParseWhileKeyword();
         return ParseExpressionStatement();
     }
 
@@ -92,6 +94,14 @@ public class Parser
         var keyword = Match(SyntaxKind.ElseKeyword);
         var statements = ParseStatement();
         return  new ElseClauseSyntax(keyword, statements);
+    }
+    
+    private StatementSyntax ParseWhileKeyword()
+    {
+        var keyword =  Match(SyntaxKind.WhileKeyword);
+        var condition = ParseExpression();
+        var statements = ParseStatement();
+        return new WhileStatementSyntax(keyword, condition, statements);
     }
 
     private SyntaxToken Match(SyntaxKind kind)

@@ -62,9 +62,11 @@ public sealed class Binder
             case SyntaxKind.ExpressionStatement:
                 return BindExpressionStatement((ExpressionStatementSyntax)syntax);
             case SyntaxKind.VariableDeclarationStatement:
-                return BindVariableDeclaration((VariableDeclarationStatementSyntax)syntax);
+                return BindVariableDeclarationStatement((VariableDeclarationStatementSyntax)syntax);
             case SyntaxKind.IfStatement:
                 return BindIfStatement((IfStatementSyntax)syntax);
+            case SyntaxKind.WhileStatement:
+                return BindWhileStatement((WhileStatementSyntax)syntax);
         }
         Diagnostics.Add(new LogDefinition(LogLevel.Error, $"没有这样的表达式 <{syntax.Kind}>", true));
         throw new Exception($"没有这样的表达式 <{syntax.Kind}>");
@@ -92,7 +94,7 @@ public sealed class Binder
         return new BoundExpressionStatement(expression);
     }
 
-    private BoundStatement BindVariableDeclaration(VariableDeclarationStatementSyntax syntax)
+    private BoundStatement BindVariableDeclarationStatement(VariableDeclarationStatementSyntax syntax)
     {
         var name = syntax.Identifier.Text;
         
@@ -111,6 +113,13 @@ public sealed class Binder
         var thanStatement = BindStatement(syntax.ThenStatement);
         var elseStatement = syntax.ElseClause is null?null:BindStatement(syntax.ElseClause.ElseStatement);
         return new BoundIfStatement(condition, thanStatement, elseStatement);
+    }
+    
+    private BoundStatement BindWhileStatement(WhileStatementSyntax syntax)
+    {
+        var condition = BindExpression(syntax.Condition, typeof(bool));
+        var statement = BindStatement(syntax.Statement);
+        return new BoundWhileStatement(condition, statement);
     }
 
     private BoundExpression BindExpression(ExpressionSyntax syntax)
