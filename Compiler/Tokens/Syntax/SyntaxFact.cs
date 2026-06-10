@@ -10,6 +10,8 @@ public static class SyntaxFact
                 return SyntaxKind.TrueKeyword;
             case "false":
                 return SyntaxKind.FalseKeyword;
+            case "int":
+                return SyntaxKind.IntKeyword;
             default:
                 return SyntaxKind.Identifier;
         }

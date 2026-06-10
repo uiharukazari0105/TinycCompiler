@@ -89,6 +89,10 @@ public class Lexer
                 return new SyntaxToken(SyntaxKind.OpenParenthesis, _position++, "(");
             case ')':
                 return new SyntaxToken(SyntaxKind.CloseParenthesis, _position++, ")");
+            case '{':
+                return new SyntaxToken(SyntaxKind.OpenBrace, _position++, "{");
+            case '}':
+                return new SyntaxToken(SyntaxKind.CloseBrace, _position++, "}");
             case '!':
                 if (AHead == '=')
                     return new SyntaxToken(SyntaxKind.ExclamationEquals, _position += 2, "!=");

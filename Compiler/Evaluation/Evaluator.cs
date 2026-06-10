@@ -2,15 +2,18 @@ using Compiler.Output;
 using Compiler.Tokens;
 using Compiler.Tokens.Binding;
 using Compiler.Tokens.Binding.Expression;
+using Compiler.Tokens.Binding.Statement;
 
 namespace Compiler.Evaluation;
 
 public sealed class Evaluator
 {
-    private readonly BoundExpression _root;
+    private readonly BoundStatement _root;
     private readonly Dictionary<VariableSymbol, dynamic> _variables;
+
+    private dynamic _lastValue;
     
-    public Evaluator(BoundExpression root, Dictionary<VariableSymbol, dynamic> variables)
+    public Evaluator(BoundStatement root, Dictionary<VariableSymbol, dynamic> variables)
     {
         _root = root;
         _variables = variables;
@@ -18,7 +21,45 @@ public sealed class Evaluator
 
     public dynamic Evaluate()
     {
-        return EvaluateExpression(_root);
+        EvaluateStatement(_root);
+        return _lastValue;
+    }
+
+    private void EvaluateStatement(BoundStatement node)
+    {
+        switch (node.Kind)
+        {
+            case BoundNodeKind.VariableDeclarationStatement:
+                EvaluateVariableDeclarationStatement((BoundVariableDeclarationStatement)node);
+                break;
+            case BoundNodeKind.BlockStatement: 
+                EvaluateBlockStatement((BoundBlockStatement)node);
+                break;
+            case BoundNodeKind.ExpressionStatement:
+                EvaluateExpressionStatement((BoundExpressionStatement)node);
+                break;
+            default:
+                new LogDefinition(LogLevel.Error, $"无法解析的表达式 <{node.Kind}>", true).Raise();
+                break;
+        }
+    }
+
+    private void EvaluateVariableDeclarationStatement(BoundVariableDeclarationStatement node)
+    {
+        var value = EvaluateExpression(node.Initializer);
+        _variables[node.Variable] = value;
+        _lastValue = value;
+    }
+
+    private void EvaluateBlockStatement(BoundBlockStatement node)
+    {
+        foreach (var variable in node.Statements)
+            EvaluateStatement(variable);
+    }
+    
+    private void EvaluateExpressionStatement(BoundExpressionStatement node)
+    {
+        _lastValue = EvaluateExpression(node.Expression);
     }
 
     private dynamic EvaluateExpression(BoundExpression node)

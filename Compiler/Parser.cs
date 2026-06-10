@@ -1,6 +1,8 @@
+using System.Collections.Immutable;
 using Compiler.Output;
 using Compiler.Tokens.Syntax;
 using Compiler.Tokens.Syntax.Expression;
+using Compiler.Tokens.Syntax.Statement;
 
 namespace Compiler;
 
@@ -29,11 +31,48 @@ public class Parser
 
     public CompilationUnitSyntax ParseCompilationUnit()
     {
-        var expression = ParseExpression();
+        var statement = ParseStatement();
         var endOfFileToken = Match(SyntaxKind.EndOfFile);
-        return new CompilationUnitSyntax(expression, endOfFileToken);
+        return new CompilationUnitSyntax(statement, endOfFileToken);
     }
-    
+
+    private StatementSyntax ParseStatement()
+    {
+        if (Current.Kind == SyntaxKind.OpenBrace)
+            return ParseBlockStatement();
+        if (Current.Kind == SyntaxKind.IntKeyword)
+            return ParseVariableDeclarationStatement();
+        return ParseExpressionStatement();
+    }
+
+    private StatementSyntax ParseBlockStatement()
+    {
+        var statements = ImmutableArray.CreateBuilder<StatementSyntax>(); 
+        var openBraceToken = Match(SyntaxKind.OpenBrace);
+        while (Current.Kind != SyntaxKind.EndOfFile
+               && Current.Kind != SyntaxKind.CloseBrace)
+        {
+            var statement = ParseStatement();
+            statements.Add(statement);
+        }
+        var closeBraceToken = Match(SyntaxKind.CloseBrace);
+        return new BlockStatementSyntax(openBraceToken, statements.ToImmutable(), closeBraceToken);
+    }
+
+    private ExpressionStatementSyntax ParseExpressionStatement()
+    {
+        var expression = ParseExpression();
+        return new  ExpressionStatementSyntax(expression); 
+    }
+
+    private StatementSyntax ParseVariableDeclarationStatement()
+    {
+        var keyword = Match(SyntaxKind.IntKeyword);
+        var identifier = Match(SyntaxKind.Identifier);
+        var equals = Match(SyntaxKind.Equals);
+        var initialize = ParseExpression();
+        return new VariableDeclarationStatementSyntax(keyword, identifier, equals, initialize);
+    }
 
     private SyntaxToken Match(SyntaxKind kind)
     {

@@ -1,8 +1,11 @@
+using System.Collections.Immutable;
 using Compiler.Output;
 using Compiler.Tokens.Binding.Expression;
 using Compiler.Tokens.Binding.Operator;
+using Compiler.Tokens.Binding.Statement;
 using Compiler.Tokens.Syntax;
 using Compiler.Tokens.Syntax.Expression;
+using Compiler.Tokens.Syntax.Statement;
 
 namespace Compiler.Tokens.Binding;
 
@@ -16,7 +19,7 @@ public sealed class Binder
     {
         var parentScope = CreateParentScopes(previous);
         var binder = new Binder(parentScope);
-        var expression = binder.BindExpression(syntax.Expression);
+        var expression = binder.BindStatement(syntax.Statement );
         var variables = binder._scope.GetDeclaredVariables();
         var diagnostics = binder.Diagnostics;
         return new BoundGlobalScope(previous, diagnostics, variables, expression);
@@ -50,7 +53,57 @@ public sealed class Binder
         _scope = new BoundScope(parent);
     }
     
-    public BoundExpression BindExpression(ExpressionSyntax syntax)
+    private BoundStatement BindStatement(StatementSyntax syntax)
+    {
+        switch (syntax.Kind)
+        {
+            case SyntaxKind.BlockStatement:
+                return BindBlockStatement((BlockStatementSyntax)syntax);
+            case SyntaxKind.ExpressionStatement:
+                return BindExpressionStatement((ExpressionStatementSyntax)syntax);
+            case SyntaxKind.VariableDeclarationStatement:
+                return BindVariableDeclaration((VariableDeclarationStatementSyntax)syntax);
+        }
+        Diagnostics.Add(new LogDefinition(LogLevel.Error, $"没有这样的表达式 <{syntax.Kind}>", true));
+        throw new Exception($"没有这样的表达式 <{syntax.Kind}>");
+    }
+
+    private BoundStatement BindBlockStatement(BlockStatementSyntax syntax)
+    {
+        var statements = ImmutableArray.CreateBuilder<BoundStatement>();
+        _scope = new BoundScope(_scope);
+        
+        foreach (var statementSyntax in syntax.Statements)
+        {
+            var statement = BindStatement(statementSyntax);
+            statements.Add(statement);
+        }
+
+        _scope = _scope.Parent!;
+        
+        return new BoundBlockStatement(statements.ToImmutable());
+    }
+    
+    private BoundStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
+    {
+        var expression = BindExpression(syntax.Expression);
+        return new BoundExpressionStatement(expression);
+    }
+
+    private BoundStatement BindVariableDeclaration(VariableDeclarationStatementSyntax syntax)
+    {
+        var name = syntax.Identifier.Text;
+        
+        var initializer = BindExpression(syntax.Initializer);
+        
+        var variable = new VariableSymbol(name, initializer.Type);
+        
+        if(!_scope.TryDeclare(variable))
+            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"变量 <{name}> 被重复声明", true));
+        return new BoundVariableDeclarationStatement(variable, initializer);
+    }
+
+    private BoundExpression BindExpression(ExpressionSyntax syntax)
     {
         switch (syntax.Kind)
         {
@@ -120,12 +173,16 @@ public sealed class Binder
     {
         var name = syntax.IdentifierToken.Text;
         var boundExpression = BindExpression(syntax.Expression);
-        var variable = new VariableSymbol(name, boundExpression.Type);
 
-        if (!_scope.TryDeclare(variable))
-            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"变量 <{name}> 被重复声明", true));
-        
-        
+        if (!_scope.TryLookup(name, out var variable))
+        {
+            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"变量 <{name}> 在该作用域没有声明", true));
+            return new BoundLiteralExpression(0);
+        }
+     
+        if (boundExpression.Type != variable!.Type)
+            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"不能隐式转换 <{boundExpression.Type}> 到 <{variable.Type}>", true));
+            
         return new BoundAssignmentExpression(variable, boundExpression);
     }
 }

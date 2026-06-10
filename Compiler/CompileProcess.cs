@@ -48,13 +48,13 @@ public class CompileProcess: IDisposable
         SyntaxTree = new SyntaxTree(input ?? InputFileReader.ReadToEnd());
         GlobalScope = Binder.BindGlobalScope(GlobalScope ,SyntaxTree.Root);
 
-        var boundExpression = GlobalScope.Expression;
+        var boundStatement = GlobalScope.Statement;
         var color = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Green;
         PrettyPrint.Out(SyntaxTree.Root);
         Console.ForegroundColor = color;
 
-        var evaluator = new Evaluator(boundExpression, Variables);
+        var evaluator = new Evaluator(boundStatement, Variables);
 
         List<LogDefinition> diagnostics = [];
         diagnostics.AddRange(SyntaxTree.Diagnostics);

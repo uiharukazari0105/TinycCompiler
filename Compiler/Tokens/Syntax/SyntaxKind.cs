@@ -17,6 +17,8 @@ public enum SyntaxKind
     DoublePipe,
     OpenParenthesis,
     CloseParenthesis,
+    OpenBrace,
+    CloseBrace,
     Equals,
     DoubleEquals,
     ExclamationEquals,
@@ -35,7 +37,13 @@ public enum SyntaxKind
     //Keywords
     TrueKeyword,
     FalseKeyword,
-    Identifier
+    IntKeyword,
+    Identifier,
+    
+    //Statements
+    BlockStatement,
+    ExpressionStatement,
+    VariableDeclarationStatement
 }
 
 public static class SyntaxKindExtensions
