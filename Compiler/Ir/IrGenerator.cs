@@ -1,4 +1,5 @@
 using Compiler.Ir.Instruction;
+using Compiler.Tokens;
 using Compiler.Tokens.Binding.Expression;
 using Compiler.Tokens.Binding.Operator;
 using Compiler.Tokens.Binding.Statement;
@@ -8,16 +9,39 @@ namespace Compiler.Ir;
 public class IrGenerator
 {
     private readonly List<IrInstruction> _instructions = [];
+    private readonly Dictionary<VariableSymbol, string> _varNames = new();
+    private readonly HashSet<string> _usedNames = new();
     private int _tempCounter;
     private int _labelCounter;
 
     public IReadOnlyList<IrInstruction> Generate(BoundStatement root)
     {
         _instructions.Clear();
+        _varNames.Clear();
+        _usedNames.Clear();
         _tempCounter = 0;
         _labelCounter = 0;
         EmitStatement(root);
         return _instructions;
+    }
+
+    /// <summary>Map a VariableSymbol to a unique IR-level name (handles shadowing).</summary>
+    private string VarName(VariableSymbol v)
+    {
+        if (!_varNames.TryGetValue(v, out var name))
+        {
+            name = v.Name;
+            if (_usedNames.Contains(name))
+            {
+                var suffix = 1;
+                while (_usedNames.Contains($"{v.Name}_{suffix}"))
+                    suffix++;
+                name = $"{v.Name}_{suffix}";
+            }
+            _varNames[v] = name;
+            _usedNames.Add(name);
+        }
+        return name;
     }
 
     private string NewTemp() => $"t{++_tempCounter}";
@@ -35,7 +59,7 @@ public class IrGenerator
             case BoundVariableDeclarationStatement v:
                 var init = EmitExpression(v.Initializer);
                 if (init != "0")
-                    _instructions.Add(new AssignIr(v.Variable.Name, init));
+                    _instructions.Add(new AssignIr(VarName(v.Variable), init));
                 break;
 
             case BoundExpressionStatement e:
@@ -139,13 +163,13 @@ public class IrGenerator
                 return l.Value.ToString()!;
 
             case BoundVariableExpression v:
-                return v.Variable.Name;
+                return VarName(v.Variable);
 
             case BoundAssignmentExpression a:
             {
                 var val = EmitExpression(a.Expression);
-                _instructions.Add(new AssignIr(a.Variable.Name, val));
-                return a.Variable.Name;
+                _instructions.Add(new AssignIr(VarName(a.Variable), val));
+                return VarName(a.Variable);
             }
 
             case BoundSelfOperatorExpression s:
@@ -153,9 +177,9 @@ public class IrGenerator
                 var val = EmitExpression(s.Expression);
                 var op = s.Operator.Kind.OperatorString();
                 var temp = NewTemp();
-                _instructions.Add(new BinaryIr(temp, s.Variable.Name, op, val));
-                _instructions.Add(new AssignIr(s.Variable.Name, temp));
-                return s.Variable.Name;
+                _instructions.Add(new BinaryIr(temp, VarName(s.Variable), op, val));
+                _instructions.Add(new AssignIr(VarName(s.Variable), temp));
+                return VarName(s.Variable);
             }
 
             case BoundBinaryExpression b:
@@ -186,16 +210,16 @@ public class IrGenerator
             case BoundPrefixExpression p:
             {
                 var delta = p.OperatorKind == BoundUnaryOperatorKind.PrefixIncrement ? "1" : "-1";
-                _instructions.Add(new BinaryIr(p.Variable.Name, p.Variable.Name, "+", delta));
-                return p.Variable.Name;
+                _instructions.Add(new BinaryIr(VarName(p.Variable), VarName(p.Variable), "+", delta));
+                return VarName(p.Variable);
             }
 
             case BoundPostfixExpression p:
             {
                 var old = NewTemp();
-                _instructions.Add(new AssignIr(old, p.Variable.Name));
+                _instructions.Add(new AssignIr(old, VarName(p.Variable)));
                 var delta = p.OperatorKind == BoundUnaryOperatorKind.PostfixIncrement ? "1" : "-1";
-                _instructions.Add(new BinaryIr(p.Variable.Name, p.Variable.Name, "+", delta));
+                _instructions.Add(new BinaryIr(VarName(p.Variable), VarName(p.Variable), "+", delta));
                 return old;
             }
 

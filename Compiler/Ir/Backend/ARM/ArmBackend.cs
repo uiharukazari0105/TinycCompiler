@@ -88,7 +88,7 @@ public class ArmBackend : Backend
         EmitLoad(builder, b.Right);
         switch (b.Operator)
         {
-            case "-": builder.AppendLineWithIndent("rbuilder r0, r0, #0"); break;
+            case "-": builder.AppendLineWithIndent("rsb r0, r0, #0"); break;
             case "!":
                 builder.AppendLineWithIndent("cmp r0, #0");
                 builder.AppendLineWithIndent("mov r0, #0");
