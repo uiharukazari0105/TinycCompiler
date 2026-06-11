@@ -45,7 +45,13 @@ public class CompileProcess: IDisposable
 
     public EvaluationResult Evaluate(string? input = null)
     {
-        SyntaxTree = new SyntaxTree(input ?? InputFileReader.ReadToEnd());
+        var raw = input ?? InputFileReader.ReadToEnd();
+        Console.WriteLine("=== 预处理前 ===");
+        Console.WriteLine(raw);
+        var source = Preprocessor.Process(raw);
+        Console.WriteLine("=== 预处理后 ===");
+        Console.WriteLine(source);
+        SyntaxTree = new SyntaxTree(source);
         GlobalScope = Binder.BindGlobalScope(GlobalScope ,SyntaxTree.Root);
 
         var boundStatement = GlobalScope.Statement;
