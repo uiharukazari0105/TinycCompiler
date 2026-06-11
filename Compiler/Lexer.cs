@@ -115,8 +115,8 @@ public class Lexer
                 return new SyntaxToken(SyntaxKind.Less, _position++, "<");
             case '>':
                 if (AHead == '=')
-                    return new SyntaxToken(SyntaxKind.GreaterOrEquals, _position += 2, "<=");
-                return new SyntaxToken(SyntaxKind.Greater, _position++, "<");
+                    return new SyntaxToken(SyntaxKind.GreaterOrEquals, _position += 2, ">=");
+                return new SyntaxToken(SyntaxKind.Greater, _position++, ">");
             case ';':
                 return new SyntaxToken(SyntaxKind.Semicolon, _position++, ";");
             case ',':

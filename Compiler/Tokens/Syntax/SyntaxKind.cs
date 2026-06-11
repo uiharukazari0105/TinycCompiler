@@ -71,13 +71,14 @@ public static class SyntaxKindExtensions
         {
             return kind switch
             {
-                SyntaxKind.Pipe or SyntaxKind.DoublePipe or SyntaxKind.Caret => 1,
+                SyntaxKind.Pipe or SyntaxKind.DoublePipe => 1,
                 SyntaxKind.Ampersand or SyntaxKind.DoubleAmpersand => 2,
+                SyntaxKind.Caret => 3,
                 SyntaxKind.DoubleEquals or SyntaxKind.ExclamationEquals or 
                 SyntaxKind.Less or SyntaxKind.LessOrEquals or 
-                SyntaxKind.Greater or SyntaxKind.GreaterOrEquals => 3,
-                SyntaxKind.Plus or SyntaxKind.Minus => 4,
-                SyntaxKind.Star or SyntaxKind.Slash => 5,
+                SyntaxKind.Greater or SyntaxKind.GreaterOrEquals => 4,
+                SyntaxKind.Plus or SyntaxKind.Minus => 5,
+                SyntaxKind.Star or SyntaxKind.Slash => 6,
                 _ => 0
             };
         }
@@ -86,8 +87,8 @@ public static class SyntaxKindExtensions
         {
             return kind switch
             {
-                SyntaxKind.Plus or SyntaxKind.Minus or SyntaxKind.Exclamation or SyntaxKind.Tilde => 6,
-                SyntaxKind.DoublePlus => 7,
+                SyntaxKind.Plus or SyntaxKind.Minus or SyntaxKind.Exclamation or SyntaxKind.Tilde => 7,
+                SyntaxKind.DoublePlus => 8,
                 _ => 0
             };
         }
