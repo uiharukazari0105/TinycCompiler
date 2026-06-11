@@ -5,20 +5,20 @@ public class AssignmentExpressionSyntax: ExpressionSyntax
     public override SyntaxKind Kind => SyntaxKind.AssignmentExpression;
 
     public SyntaxToken IdentifierToken { get; }
-    public SyntaxToken EqualsToken { get; }
+    public SyntaxToken OperatorToken { get; }
     public ExpressionSyntax Expression { get; }
 
-    public AssignmentExpressionSyntax(SyntaxToken identifierToken, SyntaxToken equalsToken, ExpressionSyntax expression)
+    public AssignmentExpressionSyntax(SyntaxToken identifierToken, SyntaxToken operatorToken, ExpressionSyntax expression)
     {
         IdentifierToken = identifierToken;
-        EqualsToken = equalsToken;
+        OperatorToken = operatorToken;
         Expression = expression;
     }
 
     public override IEnumerable<SyntaxNode> GetChildren()
     {
         yield return  IdentifierToken;
-        yield return EqualsToken;
+        yield return OperatorToken;
         yield return Expression;
     }
 }

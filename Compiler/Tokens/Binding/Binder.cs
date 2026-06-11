@@ -102,7 +102,8 @@ public sealed class Binder
     {
         var name = syntax.Identifier.Text;
         
-        var initializer = BindExpression(syntax.Initializer);
+        var initializer = syntax.Initializer is null?new BoundLiteralExpression(0):BindExpression(syntax.Initializer);
+        //TODO 我也不太清楚这样给定初始值是否合理
         
         var keywordType = syntax.Keyword.Kind switch
         {
@@ -243,9 +244,19 @@ public sealed class Binder
         }
      
         if (boundExpression.Type != variable!.Type)
-            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"不能隐式转换 <{boundExpression.Type}> 到 <{variable.Type}>", true));
-            
-        return new BoundAssignmentExpression(variable, boundExpression);
+            boundExpression = new BoundConversionExpression(variable.Type, boundExpression);
+        
+        if(syntax.OperatorToken.Kind == SyntaxKind.Equals)
+            return new BoundAssignmentExpression(variable, boundExpression);
+        
+        var boundOperator = BoundBinaryOperator.Bind(variable.Type, syntax.OperatorToken.Kind, boundExpression.Type);
+
+        if (boundOperator is null)
+        {
+            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"二元运算符 <{syntax.OperatorToken.Text}> 不能放在 <{variable.Type}> 和 <{syntax.OperatorToken.Kind}> 之间", true));
+            return boundExpression;
+        }
+        return new BoundSelfOperatorExpression(variable, boundOperator, boundExpression);
     }
 
     private static Dictionary<Type, uint> _typeLevels = new Dictionary<Type, uint>

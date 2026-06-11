@@ -31,6 +31,15 @@ public enum SyntaxKind
     Comma,
     Caret,
     Tilde,
+    Percentage,
+    AddEquals,
+    MinusEquals,
+    StarEquals,
+    SlashEquals,
+    AmpersandEquals,
+    PipeEquals,
+    CaretEquals,
+    PercentageEquals,
     Bad,
     EndOfFile,
     
@@ -57,7 +66,7 @@ public enum SyntaxKind
     ForKeyword,
     WhileKeyword,
     BoolKeyword,
-    
+    CharKeyword,
     
     //Statements
     BlockStatement,
@@ -67,8 +76,7 @@ public enum SyntaxKind
     ElseClause,
     WhileStatement,
     ForStatement,
-    EmptyStatement,
-    CharKeyword
+    EmptyStatement
 }
 
 public static class SyntaxKindExtensions
@@ -86,7 +94,7 @@ public static class SyntaxKindExtensions
                 SyntaxKind.Less or SyntaxKind.LessOrEquals or 
                 SyntaxKind.Greater or SyntaxKind.GreaterOrEquals => 4,
                 SyntaxKind.Plus or SyntaxKind.Minus => 5,
-                SyntaxKind.Star or SyntaxKind.Slash => 6,
+                SyntaxKind.Star or SyntaxKind.Slash or SyntaxKind.Percentage => 6,
                 _ => 0
             };
         }

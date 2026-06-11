@@ -6,11 +6,11 @@ public sealed class VariableDeclarationStatementSyntax: StatementSyntax
 {
     public SyntaxToken Keyword { get; }
     public SyntaxToken Identifier { get; }
-    public SyntaxToken EqualsToken { get; }
-    public ExpressionSyntax Initializer { get; }
+    public SyntaxToken? EqualsToken { get; }
+    public ExpressionSyntax? Initializer { get; }
     public override SyntaxKind Kind => SyntaxKind.VariableDeclarationStatement;
 
-    public VariableDeclarationStatementSyntax(SyntaxToken keyword, SyntaxToken identifier, SyntaxToken equalsToken, ExpressionSyntax initializer)
+    public VariableDeclarationStatementSyntax(SyntaxToken keyword, SyntaxToken identifier, SyntaxToken? equalsToken, ExpressionSyntax? initializer)
     {
         Keyword = keyword;
         Identifier = identifier;
@@ -22,7 +22,9 @@ public sealed class VariableDeclarationStatementSyntax: StatementSyntax
     {
         yield return Keyword;
         yield return Identifier;
-        yield return EqualsToken;
-        yield return Initializer;
+        if(EqualsToken != null)
+            yield return EqualsToken;
+        if(Initializer is not null)
+            yield return Initializer;
     }
 }

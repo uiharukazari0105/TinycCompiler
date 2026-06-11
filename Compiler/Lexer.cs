@@ -109,12 +109,20 @@ public class Lexer
             case '+':
                 if(AHead == '+')
                     return new SyntaxToken(SyntaxKind.DoublePlus, _position+=2, "++");
+                if(AHead == '=')
+                    return new SyntaxToken(SyntaxKind.AddEquals, _position += 2, "+=");
                 return new SyntaxToken(SyntaxKind.Plus, _position++, "+");
             case '-':
+                if(AHead == '=')
+                    return new SyntaxToken(SyntaxKind.MinusEquals, _position += 2, "-=");
                 return new SyntaxToken(SyntaxKind.Minus, _position++, "-");
             case '*':
+                if(AHead == '=')
+                    return new SyntaxToken(SyntaxKind.StarEquals, _position += 2, "*=");
                 return new SyntaxToken(SyntaxKind.Star, _position++, "*");
             case '/':
+                if(AHead == '=')
+                    return new SyntaxToken(SyntaxKind.SlashEquals, _position += 2, "/=");
                 return new SyntaxToken(SyntaxKind.Slash, _position++, "/");
             case '(':
                 return new SyntaxToken(SyntaxKind.OpenParenthesis, _position++, "(");
@@ -131,10 +139,14 @@ public class Lexer
             case '&':
                 if (AHead == '&')
                     return new SyntaxToken(SyntaxKind.DoubleAmpersand, _position += 2, "&&");
+                if(AHead == '=')
+                    return new SyntaxToken(SyntaxKind.AmpersandEquals, _position += 2, "&=");
                 return new SyntaxToken(SyntaxKind.Ampersand, _position++, "&");
             case '|':
                 if (AHead == '|')
                     return new SyntaxToken(SyntaxKind.DoublePipe, _position += 2, "||");
+                if(AHead == '=')
+                    return new SyntaxToken(SyntaxKind.PipeEquals, _position += 2, "|=");
                 return new SyntaxToken(SyntaxKind.Pipe, _position++, "|");
             case '=':
                 if(AHead == '=')
@@ -153,9 +165,15 @@ public class Lexer
             case ',':
                 return new SyntaxToken(SyntaxKind.Comma, _position++, ",");
             case '^':
+                if(AHead == '=')
+                    return new SyntaxToken(SyntaxKind.CaretEquals, _position += 2, "^=");
                 return new SyntaxToken(SyntaxKind.Caret, _position++, "^");
             case '~':
                 return new SyntaxToken(SyntaxKind.Tilde, _position++, "~");
+            case '%':
+                if(AHead == '=')
+                    return new SyntaxToken(SyntaxKind.PercentageEquals, _position += 2, "%=");
+                return new SyntaxToken(SyntaxKind.Percentage, _position++, "%");
             default:
                 Diagnostics.Add(new LogDefinition(LogLevel.Error, $"非预期令牌 <{Current}>", true));
                 return new SyntaxToken(SyntaxKind.Bad, _position++, _text[_position-1].ToString());

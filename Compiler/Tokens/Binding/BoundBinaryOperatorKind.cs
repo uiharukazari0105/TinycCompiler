@@ -16,5 +16,14 @@ public enum BoundBinaryOperatorKind
     LessOrEquals,
     Greater,
     GreaterOrEquals,
-    ExclusiveOr
+    ExclusiveOr,
+    Molding,
+    SelfAddition,
+    SelfSubtraction,
+    SelfMultiplication,
+    SelfDivision,
+    SelfBitwiseAnd,
+    SelfBitwiseOr,
+    SelfExclusiveOr,
+    SelfMolding
 }

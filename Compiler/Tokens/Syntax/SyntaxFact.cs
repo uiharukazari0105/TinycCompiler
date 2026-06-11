@@ -24,7 +24,7 @@ public static class SyntaxFact
         ("true", SyntaxKind.TrueKeyword),
         ("false", SyntaxKind.FalseKeyword),
         
-        ("if", SyntaxKind.IfStatement),
+        ("if", SyntaxKind.IfKeyWord),
         ("else", SyntaxKind.ElseKeyword),
         
         ("for", SyntaxKind.ForKeyword),

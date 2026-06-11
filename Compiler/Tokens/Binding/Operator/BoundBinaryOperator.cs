@@ -50,10 +50,17 @@ public sealed class BoundBinaryOperator
         new(typeof(IComparable), SyntaxKind.LessOrEquals, BoundBinaryOperatorKind.LessOrEquals),
         new(typeof(IComparable), SyntaxKind.Greater, BoundBinaryOperatorKind.Greater),
         new(typeof(IComparable), SyntaxKind.GreaterOrEquals, BoundBinaryOperatorKind.GreaterOrEquals),
-        new(typeof(short), SyntaxKind.Caret, BoundBinaryOperatorKind.ExclusiveOr),
-        new(typeof(int), SyntaxKind.Caret, BoundBinaryOperatorKind.ExclusiveOr),
-        new(typeof(long), SyntaxKind.Caret, BoundBinaryOperatorKind.ExclusiveOr),
-        new(typeof(bool), SyntaxKind.Caret, BoundBinaryOperatorKind.ExclusiveOr)
+        new(typeof(INumber<>), SyntaxKind.Caret, BoundBinaryOperatorKind.ExclusiveOr),
+        new(typeof(INumber<>), SyntaxKind.Percentage, BoundBinaryOperatorKind.Molding),
+        
+        new(typeof(INumber<>), SyntaxKind.AddEquals, BoundBinaryOperatorKind.SelfAddition),
+        new(typeof(INumber<>), SyntaxKind.MinusEquals, BoundBinaryOperatorKind.SelfSubtraction),
+        new(typeof(INumber<>), SyntaxKind.StarEquals, BoundBinaryOperatorKind.SelfMultiplication),
+        new(typeof(INumber<>), SyntaxKind.SlashEquals, BoundBinaryOperatorKind.SelfDivision),
+        new(typeof(INumber<>), SyntaxKind.AmpersandEquals, BoundBinaryOperatorKind.SelfBitwiseAnd),
+        new(typeof(INumber<>), SyntaxKind.PipeEquals, BoundBinaryOperatorKind.SelfBitwiseOr),
+        new(typeof(INumber<>), SyntaxKind.CaretEquals, BoundBinaryOperatorKind.SelfExclusiveOr),
+        new(typeof(INumber<>), SyntaxKind.PercentageEquals, BoundBinaryOperatorKind.SelfMolding)
     ];
 
     public static BoundBinaryOperator? Bind(Type leftType, SyntaxKind operatorTokenKind, Type rightType)

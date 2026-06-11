@@ -115,6 +115,8 @@ public sealed class Evaluator
                 return EvaluateBinaryExpression(b);
             case BoundConversionExpression c:
                 return EvaluateConversionExpression(c);
+            case BoundSelfOperatorExpression s:
+                return EvaluateSelfOperatorExpression(s);
             default:
                 new LogDefinition(LogLevel.Error, $"无法解析的节点 <{node.Kind}>", true).Raise();
                 return 0;
@@ -194,16 +196,46 @@ public sealed class Evaluator
                 return left >= right;
             case BoundBinaryOperatorKind.ExclusiveOr:
                 return left ^ right;
+            case BoundBinaryOperatorKind.Molding:
+                return left % right;
             default:
                 new LogDefinition(LogLevel.Error, $"非预期运算符 <{b.Operator.Kind}>", true).Raise();
                 return 0;
         }
     }
     
-    private dynamic EvaluateConversionExpression(BoundConversionExpression boundConversionExpression)
+    private dynamic EvaluateConversionExpression(BoundConversionExpression c)
     {
-        var operand = EvaluateExpression(boundConversionExpression.Expression);
-        return Conversion(operand, boundConversionExpression.Type);
+        var operand = EvaluateExpression(c.Expression);
+        return Conversion(operand, c.Type);
+    }
+    
+    private dynamic EvaluateSelfOperatorExpression(BoundSelfOperatorExpression s)
+    {
+        var operand = EvaluateExpression(s.Expression);
+        
+        switch (s.Operator.Kind)
+        {
+            case BoundBinaryOperatorKind.SelfAddition:
+                return _variables[s.Variable] += operand;
+            case BoundBinaryOperatorKind.SelfSubtraction:
+                return _variables[s.Variable] -= operand;
+            case BoundBinaryOperatorKind.SelfMultiplication:
+                return _variables[s.Variable] *= operand;
+            case BoundBinaryOperatorKind.SelfDivision:
+                return _variables[s.Variable] /= operand;
+            case BoundBinaryOperatorKind.SelfBitwiseAnd:
+                return _variables[s.Variable] &= operand;
+            case BoundBinaryOperatorKind.SelfBitwiseOr:
+                return _variables[s.Variable] |= operand;
+            case BoundBinaryOperatorKind.SelfExclusiveOr:
+                return _variables[s.Variable] ^= operand;
+            case BoundBinaryOperatorKind.SelfMolding:
+                return _variables[s.Variable] %= operand;
+            default:
+                new LogDefinition(LogLevel.Error, $"非预期运算符 <{s.Operator.Kind}>", true).Raise();
+                return 0;
+        }
     }
 
     private dynamic Conversion(dynamic operand, Type targetType)
@@ -235,6 +267,13 @@ public sealed class Evaluator
                 return Conversion(ConvertBool(operand), targetType);
             if (targetType ==  typeof(bool))
                 return Conversion(ToBool(operand), targetType);
+            if (operand is char)
+            {
+                if(targetType == typeof(float))
+                    return (float)operand;
+                if (targetType == typeof(double))
+                    return (double)operand;
+            }
         }
         new LogDefinition(LogLevel.Error, $"不能隐式转换类型 <{operand.GetType()}> 到 <{targetType}>", true).Raise();
         return 0;

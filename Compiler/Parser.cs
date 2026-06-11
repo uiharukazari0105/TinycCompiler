@@ -96,9 +96,15 @@ public class Parser
     {
         var keyword = NextToken();
         var identifier = Match(SyntaxKind.Identifier);
-        var equals = Match(SyntaxKind.Equals);
-        var initialize = ParseExpression();
-        return new VariableDeclarationStatementSyntax(keyword, identifier, equals, initialize);
+        SyntaxToken? equals = null;
+        ExpressionSyntax? initializer = null;
+        if (Peek(0).Kind != SyntaxKind.Semicolon)
+        {
+            equals = Match(SyntaxKind.Equals);
+            initializer = ParseExpression();
+        }
+        
+        return new VariableDeclarationStatementSyntax(keyword, identifier, equals, initializer);
     }
     
     private StatementSyntax ParseIfStatement()
@@ -258,7 +264,18 @@ public class Parser
     
     private ExpressionSyntax ParseAssignmentExpression()
     {
-        if (Current.Kind == SyntaxKind.Identifier && Peek(1).Kind == SyntaxKind.Equals)
+        List<SyntaxKind> acceptableOperators = [
+            SyntaxKind.Equals,
+            SyntaxKind.AddEquals,
+            SyntaxKind.MinusEquals,
+            SyntaxKind.StarEquals,
+            SyntaxKind.SlashEquals,
+            SyntaxKind.AmpersandEquals,
+            SyntaxKind.PipeEquals,
+            SyntaxKind.CaretEquals,
+            SyntaxKind.PercentageEquals
+        ];
+        if (Current.Kind == SyntaxKind.Identifier && acceptableOperators.Contains(Peek(1).Kind))
         {
             var identifierToken = NextToken();
             var operatorToken = NextToken();
