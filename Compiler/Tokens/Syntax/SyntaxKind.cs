@@ -4,6 +4,7 @@ public enum SyntaxKind
 {
     //Tokens
     Number,
+    Character,
     WhiteSpace,
     Plus,
     DoublePlus,
@@ -55,6 +56,8 @@ public enum SyntaxKind
     ElseKeyword,
     ForKeyword,
     WhileKeyword,
+    BoolKeyword,
+    
     
     //Statements
     BlockStatement,
@@ -64,7 +67,8 @@ public enum SyntaxKind
     ElseClause,
     WhileStatement,
     ForStatement,
-    EmptyStatement
+    EmptyStatement,
+    CharKeyword
 }
 
 public static class SyntaxKindExtensions

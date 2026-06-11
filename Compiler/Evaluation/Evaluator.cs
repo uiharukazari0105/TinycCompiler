@@ -113,6 +113,8 @@ public sealed class Evaluator
                 return EvaluateUnaryExpression(u);
             case BoundBinaryExpression b:
                 return EvaluateBinaryExpression(b);
+            case BoundConversionExpression c:
+                return EvaluateConversionExpression(c);
             default:
                 new LogDefinition(LogLevel.Error, $"无法解析的节点 <{node.Kind}>", true).Raise();
                 return 0;
@@ -179,7 +181,7 @@ public sealed class Evaluator
             case BoundBinaryOperatorKind.LogicalOr:
                 return ToBool(left) || ToBool(right);
             case BoundBinaryOperatorKind.Equality:
-                return ToBool(left) == ToBool(right);
+                return ConvertBool(left) == ConvertBool(right);
             case BoundBinaryOperatorKind.Inequality:
                 return left != right;
             case BoundBinaryOperatorKind.Less:
@@ -197,14 +199,61 @@ public sealed class Evaluator
                 return 0;
         }
     }
+    
+    private dynamic EvaluateConversionExpression(BoundConversionExpression boundConversionExpression)
+    {
+        var operand = EvaluateExpression(boundConversionExpression.Expression);
+        return Conversion(operand, boundConversionExpression.Type);
+    }
+
+    private dynamic Conversion(dynamic operand, Type targetType)
+    {
+        try
+        {
+            return Convert.ChangeType(operand, targetType);
+        }
+        catch (OverflowException)
+        {
+            new LogDefinition(LogLevel.Warning, $"从 <{operand.GetType()}> 到 <{targetType}> 的转换溢出")
+                .Raise();
+            if (targetType == typeof(char))
+                return (char)operand;
+            if (targetType == typeof(short))
+                return (short)operand;
+            if (targetType == typeof(int))
+                return (int)operand;
+            if (targetType == typeof(long))
+                return (long)operand;
+            if (targetType == typeof(float))
+                return (float)operand;
+            if (targetType == typeof(double))
+                return (double)operand;
+        }
+        catch (InvalidCastException)
+        {
+            if (operand is bool)
+                return Conversion(ConvertBool(operand), targetType);
+            if (targetType ==  typeof(bool))
+                return Conversion(ToBool(operand), targetType);
+        }
+        new LogDefinition(LogLevel.Error, $"不能隐式转换类型 <{operand.GetType()}> 到 <{targetType}>", true).Raise();
+        return 0;
+    }
 
     private bool ToBool(dynamic operand)
     {
-        if (operand is int || operand is long || operand is float || operand is double)
+        if (operand is char || operand is short || operand is int || operand is long || operand is float || operand is double)
             return operand != 0;
         if(operand is bool)
             return operand;
         new LogDefinition(LogLevel.Error, $"不能隐式转换类型 <{operand.GetType()}> 到 <Boolean>", true).Raise();
         return false;
+    }
+    
+    private dynamic ConvertBool(dynamic operand)
+    {
+        if(operand is bool)
+            return operand?1:0;
+        return operand;
     }
 }

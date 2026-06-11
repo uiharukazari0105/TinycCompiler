@@ -25,7 +25,7 @@ public class Parser
             tokens.Add(token);
         } while (token.Kind != SyntaxKind.EndOfFile);
         
-        _tokens = tokens.ToArray(); 
+        _tokens = tokens.ToArray();
         Diagnostics.AddRange(lexer.Diagnostics);
     }
 
@@ -49,7 +49,9 @@ public class Parser
                  Current.Kind == SyntaxKind.IntKeyword ||
                  Current.Kind == SyntaxKind.LongKeyword ||
                  Current.Kind == SyntaxKind.FloatKeyword ||
-                 Current.Kind == SyntaxKind.DoubleKeyword)
+                 Current.Kind == SyntaxKind.DoubleKeyword ||
+                 Current.Kind == SyntaxKind.BoolKeyword ||
+                 Current.Kind == SyntaxKind.CharKeyword)
         {
             result = ParseVariableDeclarationStatement();
             matchEndLine = true;
@@ -172,6 +174,8 @@ public class Parser
                 return ParseBooleanLiteral();
             case SyntaxKind.Number:
                 return ParseNumberLiteral();
+            case SyntaxKind.Character:
+                return ParseCharacterLiteral();
             case SyntaxKind.Identifier:
             default:
                 return ParseNameExpression();
@@ -207,7 +211,49 @@ public class Parser
     private ExpressionSyntax ParseNumberLiteral()
     {
         var numberToken = Match(SyntaxKind.Number);
-        return new LiteralExpressionSyntax(numberToken);
+        var numberText = numberToken.Text;
+        var castSymbol = numberText[^1];
+        if(!char.IsDigit(castSymbol) && castSymbol != '.')
+            numberText = numberText[..^1];
+            
+        dynamic number;
+        if(numberToken.Text.Contains("."))
+            number = double.Parse(numberText);
+        else
+            number = int.Parse(numberText);
+
+        if (castSymbol == 'L')
+            number = (long)number;
+        else if(castSymbol == 'f')
+            number = (float)number;
+        
+        return new LiteralExpressionSyntax(numberToken, number);
+    }
+    
+    private ExpressionSyntax ParseCharacterLiteral()
+    {
+        var characterToken = Match(SyntaxKind.Character);
+        var characterText = characterToken.Text[1..^1];
+        var last = characterText.LastIndexOf('\\');
+        if(last != -1)
+            characterText = characterText[last..];
+        if(characterText.Length == 1)
+            return new LiteralExpressionSyntax(characterToken, char.Parse(characterText));
+        
+        if (characterText[^2] == '\\')
+        {
+            var esc = characterText.Length >= 2 ? characterText[1] : '?';
+            var value = esc switch
+            {
+                '0' => '\0', 'a' => '\a', 'b' => '\b', 'f' => '\f', 'n' => '\n',
+                'r' => '\r', 't' => '\t', 'v' => '\v', '\\' => '\\', '\'' => '\'',
+                '"' => '\"',
+                _ => esc
+            };
+            return new LiteralExpressionSyntax(characterToken, value);
+        }
+        
+        return new LiteralExpressionSyntax(characterToken, characterText[^1]);
     }
     
     private ExpressionSyntax ParseAssignmentExpression()

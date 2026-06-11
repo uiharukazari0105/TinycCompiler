@@ -18,6 +18,8 @@ public static class SyntaxFact
         ("long", SyntaxKind.LongKeyword),
         ("float", SyntaxKind.FloatKeyword),
         ("double", SyntaxKind.DoubleKeyword),
+        ("bool", SyntaxKind.BoolKeyword),
+        ("char", SyntaxKind.CharKeyword),
         
         ("true", SyntaxKind.TrueKeyword),
         ("false", SyntaxKind.FalseKeyword),

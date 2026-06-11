@@ -12,7 +12,8 @@ public sealed class BoundBinaryOperator
     public BoundBinaryOperatorKind Kind { get; }
 
 
-    private BoundBinaryOperator(Type leftType, SyntaxKind syntaxKind, Type rightType, Type resultType, BoundBinaryOperatorKind kind)
+    private BoundBinaryOperator(Type leftType, SyntaxKind syntaxKind, Type rightType, Type resultType,
+        BoundBinaryOperatorKind kind)
     {
         LeftType = leftType;
         SyntaxKind = syntaxKind;
@@ -20,12 +21,14 @@ public sealed class BoundBinaryOperator
         ResultType = resultType;
         Kind = kind;
     }
-    
-    private BoundBinaryOperator(Type leftType, SyntaxKind syntaxKind, Type rightType, BoundBinaryOperatorKind kind): this(leftType, syntaxKind, rightType, leftType, kind)
+
+    private BoundBinaryOperator(Type leftType, SyntaxKind syntaxKind, Type rightType, BoundBinaryOperatorKind kind) :
+        this(leftType, syntaxKind, rightType, leftType, kind)
     {
     }
-    
-    private BoundBinaryOperator(Type type, SyntaxKind syntaxKind, BoundBinaryOperatorKind kind): this(type, syntaxKind, type, type, kind)
+
+    private BoundBinaryOperator(Type type, SyntaxKind syntaxKind, BoundBinaryOperatorKind kind) : this(type, syntaxKind,
+        type, type, kind)
     {
     }
 
@@ -56,10 +59,18 @@ public sealed class BoundBinaryOperator
     public static BoundBinaryOperator? Bind(Type leftType, SyntaxKind operatorTokenKind, Type rightType)
     {
         foreach (var rule in _rules)
-            if (MatchType(rule.LeftType, leftType) && 
+            if (MatchType(rule.LeftType, leftType) &&
                 rule.SyntaxKind == operatorTokenKind &&
                 MatchType(rule.RightType, rightType))
-                return rule;
+            {
+                var resultType = rule.ResultType == rule.LeftType
+                    ? leftType
+                    : rule.ResultType.IsGenericTypeDefinition
+                        ? leftType
+                        : rule.ResultType;
+                return new BoundBinaryOperator(leftType, operatorTokenKind, rightType, resultType, rule.Kind);
+            }
+
         return null;
     }
 

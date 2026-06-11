@@ -35,20 +35,18 @@ public class Lexer
         if (char.IsDigit(Current) || Current == '.') //处理数字
         {
             var start = _position;
-            while (char.IsDigit(Current) || Current == '_' || Current == '.')
+            while (char.IsDigit(Current) || Current == '_' || Current == '.' || Current == 'f' || Current == 'L')
                 Next();
             var length = _position - start;
             var text = _text.Substring(start, length);
 
-            if (text[^1] == '_' || text.Contains("__") || text.Count('.') > 1)
+            if (text[^1] == '_' || text.Contains("__") || text.Count('.') > 1 || text == "." || text.Count('f') > 1 || text.Count('L') > 1)
             {
                 Diagnostics.Add(new LogDefinition(LogLevel.Error, $"不合理的数字格式标识 <{text}>", true));
                 return new SyntaxToken(SyntaxKind.Bad, start, text);
             }
             
-            int.TryParse(text.Replace("_",""), out var number);
-            
-            return new SyntaxToken(SyntaxKind.Number, start, text, number);
+            return new SyntaxToken(SyntaxKind.Number, start, text.Replace("_",""));
         }
 
         if (char.IsWhiteSpace(Current)) //处理空格
@@ -71,6 +69,39 @@ public class Lexer
             var text = _text.Substring(start, length);
             var kind = SyntaxFact.GetKeywordKind(text);
             return new SyntaxToken(kind, start, text);
+        }
+
+        if (Current == '\'') //处理字符
+        {
+            var start = _position;
+            Next();
+            while (Current != '\'' && _position < _text.Length)
+            {
+                if (Current >= 256)
+                {
+                    Diagnostics.Add(new LogDefinition(LogLevel.Error, $"不合理的字符 <{Current}>", true));
+                    return new SyntaxToken(SyntaxKind.Bad, start, Current.ToString());
+                }
+                Next();
+            }
+                    
+            if(Current == '\'')
+                Next();
+            else
+            {
+                Diagnostics.Add(new LogDefinition(LogLevel.Error, "单引号未闭合", true));
+                return new SyntaxToken(SyntaxKind.Bad, start, Current.ToString());
+            }
+            
+            var length = _position - start;
+            var text = _text.Substring(start, length);
+            
+            if(text.Length == 2)
+            {
+                Diagnostics.Add(new LogDefinition(LogLevel.Error, "字符表达式为空", true));
+                return new SyntaxToken(SyntaxKind.Bad, start, Current.ToString());
+            }
+            return new SyntaxToken(SyntaxKind.Character, start, text);
         }
 
         switch (Current) //处理运算符

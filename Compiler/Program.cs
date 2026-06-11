@@ -19,7 +19,6 @@ public static class Program
         // }
         
         var evaluation = compileProcess.Evaluate();
-        Logger.RaiseMany(evaluation.Diagnostics);
         Console.WriteLine(evaluation.Value);
         
         compileProcess.Dispose();

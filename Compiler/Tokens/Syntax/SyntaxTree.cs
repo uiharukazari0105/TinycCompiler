@@ -19,21 +19,4 @@ public class SyntaxTree
         Text = text;
         Root = root;
     }
-
-    public static SyntaxTree Parse(string text)
-    {
-        return new SyntaxTree(text);
-    }
-
-    public static IEnumerable<SyntaxToken> ParseTokens(string text)
-    {
-        var lexer = new Lexer(text);
-        while (true)
-        {
-            var token = lexer.NextToken();
-            if(token.Kind == SyntaxKind.EndOfFile)
-                break;
-            yield return token;
-        }
-    }
 }

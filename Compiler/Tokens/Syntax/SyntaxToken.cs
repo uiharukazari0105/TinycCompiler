@@ -8,15 +8,12 @@ public class SyntaxToken: SyntaxNode
 
     public int Position { get; }
     public string Text { get; }
-    
-    public dynamic? Value { get; }
 
-    public SyntaxToken(SyntaxKind kind, int position, string text, dynamic? value = null)
+    public SyntaxToken(SyntaxKind kind, int position, string text)
     {
         Kind = kind;
         Position = position;
         Text = text;
-        Value = value;
     }
     
     public override IEnumerable<SyntaxNode> GetChildren()

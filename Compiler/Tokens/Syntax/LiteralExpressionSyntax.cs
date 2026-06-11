@@ -15,12 +15,6 @@ public sealed class LiteralExpressionSyntax: ExpressionSyntax
         Value = value;
     }
 
-    public LiteralExpressionSyntax(SyntaxToken literalToken)
-    {
-        LiteralToken = literalToken;
-        Value = literalToken.Value;
-    }
-
     public override IEnumerable<SyntaxNode> GetChildren()
     {
         yield return LiteralToken;

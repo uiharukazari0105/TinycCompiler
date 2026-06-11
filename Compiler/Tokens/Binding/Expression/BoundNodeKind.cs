@@ -8,6 +8,7 @@ public enum BoundNodeKind
     BinaryExpression,
     VariableExpression,
     AssignmentExpression,
+    ConversionExpression,
     
     //Statements
     BlockStatement,

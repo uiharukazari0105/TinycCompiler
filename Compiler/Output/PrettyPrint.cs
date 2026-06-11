@@ -15,7 +15,7 @@ public static class PrettyPrint
         var marker = isLast ? "└──" : "├──";
         builder.Append(indent).Append(marker);
 
-        if (node is SyntaxToken { Value: not null } token)
+        if (node is SyntaxToken token)
             builder.Append(token.Kind).Append(' ').Append(token.Text);
         else
             builder.Append(node.Kind);
@@ -113,11 +113,13 @@ public static class PrettyPrint
             ("ParenthesizedExpression", "括号表达式"),
             ("NameExpression", "变量名"),
 
+            ("Type:Double", "类型:双精度浮点型"),
             ("Type", "类型"),
             ("Int32", "32位整型"),
             ("Boolean", "布尔型"),
 
             ("Value", "值"),
+            ("INumber", "数字接口"),
             ("Number", "数字"),
             ("WhiteSpace", "空白"),
             ("Plus", "加号"),

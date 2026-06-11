@@ -104,6 +104,22 @@ public sealed class Binder
         
         var initializer = BindExpression(syntax.Initializer);
         
+        var keywordType = syntax.Keyword.Kind switch
+        {
+            SyntaxKind.ShortKeyword => typeof(short),
+            SyntaxKind.IntKeyword => typeof(int),
+            SyntaxKind.LongKeyword => typeof(long),
+            SyntaxKind.FloatKeyword => typeof(float),
+            SyntaxKind.DoubleKeyword => typeof(double),
+            SyntaxKind.BoolKeyword => typeof(bool),
+            SyntaxKind.CharKeyword => typeof(char),
+            _ => typeof(object)
+        };
+
+        if (initializer.Type != keywordType)
+            initializer = BindConversion(keywordType, initializer);
+
+        
         var variable = new VariableSymbol(name, initializer.Type);
         
         if(!_scope.TryDeclare(variable))
@@ -230,5 +246,31 @@ public sealed class Binder
             Diagnostics.Add(new LogDefinition(LogLevel.Error, $"不能隐式转换 <{boundExpression.Type}> 到 <{variable.Type}>", true));
             
         return new BoundAssignmentExpression(variable, boundExpression);
+    }
+
+    private static Dictionary<Type, uint> _typeLevels = new Dictionary<Type, uint>
+    {
+        {typeof(bool), 0},
+        {typeof(char), 1},
+        {typeof(short), 2},
+        {typeof(int), 3},
+        {typeof(long), 4},
+        {typeof(float), 5},
+        {typeof(double), 6},
+    };
+
+
+    private BoundExpression BindConversion(Type targetType, BoundExpression expression)
+    {
+        if (expression.Type == targetType)
+            return expression;
+        
+        var sourceLevel = _typeLevels[expression.Type];
+        var targetLevel = _typeLevels[targetType];
+        
+        if(sourceLevel > targetLevel)
+            Diagnostics.Add(new LogDefinition(LogLevel.Warning, $"<{expression.Type}> 到 <{targetType}> 的转换存在窄化"));
+
+        return new BoundConversionExpression(targetType, expression);
     }
 }
