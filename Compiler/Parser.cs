@@ -10,6 +10,7 @@ public class Parser
 {
     public List<LogDefinition> Diagnostics { get; } = [];
     private readonly SyntaxToken[] _tokens;
+    public SyntaxToken[] Tokens => _tokens;
     private int _position;
     
     public Parser(string text)
