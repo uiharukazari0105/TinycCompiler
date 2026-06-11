@@ -26,9 +26,11 @@ public enum SyntaxKind
     Less,
     GreaterOrEquals,
     Greater,
+    Comma,
+    Caret,
+    Tilde,
     Bad,
     EndOfFile,
-    Comma,
     
     //Expressions
     BinaryExpression,
@@ -69,7 +71,7 @@ public static class SyntaxKindExtensions
         {
             return kind switch
             {
-                SyntaxKind.Pipe or SyntaxKind.DoublePipe => 1,
+                SyntaxKind.Pipe or SyntaxKind.DoublePipe or SyntaxKind.Caret => 1,
                 SyntaxKind.Ampersand or SyntaxKind.DoubleAmpersand => 2,
                 SyntaxKind.DoubleEquals or SyntaxKind.ExclamationEquals or 
                 SyntaxKind.Less or SyntaxKind.LessOrEquals or 
@@ -84,7 +86,7 @@ public static class SyntaxKindExtensions
         {
             return kind switch
             {
-                SyntaxKind.Plus or SyntaxKind.Minus or SyntaxKind.Exclamation => 6,
+                SyntaxKind.Plus or SyntaxKind.Minus or SyntaxKind.Exclamation or SyntaxKind.Tilde => 6,
                 SyntaxKind.DoublePlus => 7,
                 _ => 0
             };

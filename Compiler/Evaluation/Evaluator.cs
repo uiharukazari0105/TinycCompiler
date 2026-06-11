@@ -75,7 +75,12 @@ public sealed class Evaluator
     
     private void EvaluateIfStatement(BoundIfStatement node)
     {
-        var condition = (bool)EvaluateExpression(node.Condition);
+        var rawCondition = EvaluateExpression(node.Condition);
+        bool condition;
+        if (rawCondition is int || rawCondition is long || rawCondition is float || rawCondition is double)
+            condition = rawCondition != 0;
+        else
+            condition = (bool)rawCondition;
         if (condition)
             EvaluateStatement(node.ThenStatement);
         else if(node.ElseStatement is not null)
@@ -148,6 +153,8 @@ public sealed class Evaluator
                 return -operand;
             case BoundUnaryOperatorKind.LogicalNegation:
                 return !operand;
+            case BoundUnaryOperatorKind.BitwiseNot:
+                return ~operand;
             default:
                 new LogDefinition(LogLevel.Error, $"不合理的一元运算符 <{u.Operator.Kind}>", true).Raise();
                 return 0;
@@ -189,6 +196,8 @@ public sealed class Evaluator
                 return left > right;
             case BoundBinaryOperatorKind.GreaterOrEquals:
                 return left >= right;
+            case BoundBinaryOperatorKind.ExclusiveOr:
+                return left ^ right;
             default:
                 new LogDefinition(LogLevel.Error, $"非预期运算符 <{b.Operator.Kind}>", true).Raise();
                 return 0;

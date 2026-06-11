@@ -26,7 +26,8 @@ public sealed class BoundUnaryOperator
         new(SyntaxKind.Exclamation, typeof(bool), BoundUnaryOperatorKind.LogicalNegation),
         new(SyntaxKind.Plus, typeof(int), BoundUnaryOperatorKind.Identity),
         new(SyntaxKind.Minus, typeof(int), BoundUnaryOperatorKind.Negation),
-        new(SyntaxKind.DoublePlus, typeof(int), BoundUnaryOperatorKind.SelfAddThenGet)
+        new(SyntaxKind.DoublePlus, typeof(int), BoundUnaryOperatorKind.SelfAddThenGet),
+        new(SyntaxKind.Tilde, typeof(int), BoundUnaryOperatorKind.BitwiseNot)
     ];
 
     public static BoundUnaryOperator? Bind(SyntaxKind syntaxKind, Type operandType)

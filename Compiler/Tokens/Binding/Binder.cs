@@ -113,7 +113,7 @@ public sealed class Binder
     
     private BoundStatement BindIfStatement(IfStatementSyntax syntax)
     {
-        var condition = BindExpression(syntax.Condition, typeof(bool));
+        var condition = BindExpression(syntax.Condition);
         var thanStatement = BindStatement(syntax.ThenStatement);
         var elseStatement = syntax.ElseClause is null?null:BindStatement(syntax.ElseClause.ElseStatement);
         return new BoundIfStatement(condition, thanStatement, elseStatement);
@@ -121,7 +121,7 @@ public sealed class Binder
     
     private BoundStatement BindWhileStatement(WhileStatementSyntax syntax)
     {
-        var condition = BindExpression(syntax.Condition, typeof(bool));
+        var condition = BindExpression(syntax.Condition);
         var statement = BindStatement(syntax.Statement);
         return new BoundWhileStatement(condition, statement);
     }
@@ -132,7 +132,7 @@ public sealed class Binder
         List<BoundStatement> initializers = [];
         foreach (var initializer in syntax.Initializers)
             initializers.Add(BindStatement(initializer));
-        var condition = syntax.Condition is null?null:BindExpression(syntax.Condition, typeof(bool));
+        var condition = syntax.Condition is null?null:BindExpression(syntax.Condition);
         List<BoundStatement> stepStatements = [];
         foreach (var stepStatement in syntax.StepStatements)
             stepStatements.Add(BindStatement(stepStatement));

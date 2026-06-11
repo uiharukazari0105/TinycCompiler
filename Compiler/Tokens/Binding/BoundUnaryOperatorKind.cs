@@ -5,5 +5,6 @@ public enum BoundUnaryOperatorKind
     Identity,
     Negation,
     LogicalNegation,
-    SelfAddThenGet
+    SelfAddThenGet,
+    BitwiseNot
 }

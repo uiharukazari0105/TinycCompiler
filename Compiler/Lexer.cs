@@ -62,10 +62,10 @@ public class Lexer
             return new SyntaxToken(SyntaxKind.WhiteSpace, start, text);
         }
 
-        if (char.IsLetter(Current) || Current == '_') //处理布尔和关键字
+        if (char.IsLetter(Current) || Current == '_' || Current == '$') //处理布尔和关键字
         {
             var start = _position;
-            while (char.IsLetter(Current) || Current == '_' || char.IsDigit(Current))
+            while (char.IsLetter(Current) || Current == '_' || Current == '$' || char.IsDigit(Current))
                 Next();
             var length = _position - start;
             var text = _text.Substring(start, length);
@@ -121,6 +121,10 @@ public class Lexer
                 return new SyntaxToken(SyntaxKind.Semicolon, _position++, ";");
             case ',':
                 return new SyntaxToken(SyntaxKind.Comma, _position++, ",");
+            case '^':
+                return new SyntaxToken(SyntaxKind.Caret, _position++, "^");
+            case '~':
+                return new SyntaxToken(SyntaxKind.Tilde, _position++, "~");
             default:
                 Diagnostics.Add(new LogDefinition(LogLevel.Error, $"非预期令牌 <{Current}>", true));
                 return new SyntaxToken(SyntaxKind.Bad, _position++, _text[_position-1].ToString());
