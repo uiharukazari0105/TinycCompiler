@@ -9,7 +9,7 @@ public static class Program
     {
         args = ["./main.c"]; //MOCK
         
-        var compileProcess = new CompileProcess(args, BackendKind.X86);
+        var compileProcess = new CompileProcess(args, BackendKind.ARM);
 
         // while (true)
         // {

@@ -2,5 +2,6 @@ namespace Compiler.Ir.Backend;
 
 public enum BackendKind
 {
-    X86
+    X86,
+    ARM
 }
