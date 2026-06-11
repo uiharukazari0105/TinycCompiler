@@ -65,6 +65,12 @@ public sealed class Binder
                 return BindVariableDeclarationStatement((VariableDeclarationStatementSyntax)syntax);
             case SyntaxKind.FunctionDeclaration:
                 return BindFunctionDeclarationStatement((FunctionDeclarationSyntax)syntax);
+            case SyntaxKind.ReturnStatement:
+                return BindReturnStatement((ReturnStatementSyntax)syntax);
+            case SyntaxKind.BreakStatement:
+                return new BoundBreakStatement();
+            case SyntaxKind.ContinueStatement:
+                return new BoundContinueStatement();
             case SyntaxKind.IfStatement:
                 return BindIfStatement((IfStatementSyntax)syntax);
             case SyntaxKind.WhileStatement:
@@ -98,6 +104,14 @@ public sealed class Binder
     {
         var body = BindStatement(syntax.Body);
         return new BoundFunctionDeclarationStatement(body);
+    }
+
+    private BoundStatement BindReturnStatement(ReturnStatementSyntax syntax)
+    {
+        var expression = syntax.Expression is null
+            ? null
+            : BindExpression(syntax.Expression);
+        return new BoundReturnStatement(expression);
     }
 
     private BoundStatement BindExpressionStatement(ExpressionStatementSyntax syntax)

@@ -19,5 +19,8 @@ public enum BoundNodeKind
     WhileStatement,
     ForStatement,
     EmptyStatement,
-    FunctionDeclarationStatement
+    FunctionDeclarationStatement,
+    ReturnStatement,
+    BreakStatement,
+    ContinueStatement
 }

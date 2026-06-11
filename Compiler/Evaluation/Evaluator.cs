@@ -12,7 +12,7 @@ public sealed class Evaluator
     private readonly Dictionary<VariableSymbol, dynamic> _variables;
 
     private dynamic? _lastValue;
-    
+
     public Evaluator(BoundStatement root, Dictionary<VariableSymbol, dynamic> variables)
     {
         _root = root;
@@ -21,7 +21,14 @@ public sealed class Evaluator
 
     public dynamic? Evaluate()
     {
-        EvaluateStatement(_root);
+        try
+        {
+            EvaluateStatement(_root);
+        }
+        catch (ReturnException ex)
+        {
+            return ex.Value;
+        }
         return _lastValue;
     }
 
@@ -32,7 +39,7 @@ public sealed class Evaluator
             case BoundNodeKind.VariableDeclarationStatement:
                 EvaluateVariableDeclarationStatement((BoundVariableDeclarationStatement)node);
                 break;
-            case BoundNodeKind.BlockStatement: 
+            case BoundNodeKind.BlockStatement:
                 EvaluateBlockStatement((BoundBlockStatement)node);
                 break;
             case BoundNodeKind.ExpressionStatement:
@@ -50,6 +57,13 @@ public sealed class Evaluator
             case BoundNodeKind.FunctionDeclarationStatement:
                 EvaluateFunctionDeclarationStatement((BoundFunctionDeclarationStatement)node);
                 break;
+            case BoundNodeKind.ReturnStatement:
+                EvaluateReturnStatement((BoundReturnStatement)node);
+                break;
+            case BoundNodeKind.BreakStatement:
+                throw new BreakException();
+            case BoundNodeKind.ContinueStatement:
+                throw new ContinueException();
             case BoundNodeKind.EmptyStatement:
                 break;
             default:
@@ -73,37 +87,71 @@ public sealed class Evaluator
 
     private void EvaluateFunctionDeclarationStatement(BoundFunctionDeclarationStatement node)
     {
-        EvaluateStatement(node.Body);
+        try
+        {
+            EvaluateStatement(node.Body);
+        }
+        catch (ReturnException)
+        {
+            // return value already captured by Evaluate(); just unwind
+        }
+    }
+
+    private void EvaluateReturnStatement(BoundReturnStatement node)
+    {
+        var value = node.Expression is null
+            ? (dynamic)0
+            : EvaluateExpression(node.Expression);
+        _lastValue = value;
+        throw new ReturnException(value);
     }
 
     private void EvaluateExpressionStatement(BoundExpressionStatement node)
     {
         _lastValue = EvaluateExpression(node.Expression);
     }
-    
+
     private void EvaluateIfStatement(BoundIfStatement node)
     {
         if (ToBool(EvaluateExpression(node.Condition)))
             EvaluateStatement(node.ThenStatement);
-        else if(node.ElseStatement is not null)
+        else if (node.ElseStatement is not null)
             EvaluateStatement(node.ElseStatement);
     }
-    
+
     private void EvaluateWhileStatement(BoundWhileStatement node)
     {
         while (ToBool(EvaluateExpression(node.Condition)))
-            EvaluateStatement(node.Statement);
+        {
+            try
+            {
+                EvaluateStatement(node.Statement);
+            }
+            catch (ContinueException) { }
+            catch (BreakException) { break; }
+        }
     }
-    
+
     private void EvaluateForStatement(BoundForStatement node)
     {
         foreach (var initializer in node.Initializers)
             EvaluateStatement(initializer);
-        for (; node.Condition is null?true:ToBool(EvaluateExpression(node.Condition));)
+        for (; node.Condition is null ? true : ToBool(EvaluateExpression(node.Condition));)
         {
-            EvaluateStatement(node.Statement);
-            foreach (var statement in node.StepStatements)
-                EvaluateStatement(statement);
+            try
+            {
+                EvaluateStatement(node.Statement);
+            }
+            catch (ContinueException) { }
+            catch (BreakException) { break; }
+
+            try
+            {
+                foreach (var statement in node.StepStatements)
+                    EvaluateStatement(statement);
+            }
+            catch (ContinueException) { }
+            catch (BreakException) { break; }
         }
     }
 
@@ -135,19 +183,19 @@ public sealed class Evaluator
     {
         return n.Value;
     }
-    
+
     private dynamic EvaluateVariableExpression(BoundVariableExpression v)
     {
         return _variables[v.Variable];
     }
-    
+
     private dynamic EvaluateAssignmentExpression(BoundAssignmentExpression a)
     {
         var value = EvaluateExpression(a.Expression);
         _variables[a.Variable] = value;
         return value;
     }
-    
+
     private dynamic EvaluateUnaryExpression(BoundUnaryExpression u)
     {
         var operand = EvaluateExpression(u.Operand);
@@ -166,7 +214,7 @@ public sealed class Evaluator
                 return 0;
         }
     }
-    
+
     private dynamic EvaluateBinaryExpression(BoundBinaryExpression b)
     {
         var left = EvaluateExpression(b.Left);
@@ -211,17 +259,17 @@ public sealed class Evaluator
                 return 0;
         }
     }
-    
+
     private dynamic EvaluateConversionExpression(BoundConversionExpression c)
     {
         var operand = EvaluateExpression(c.Expression);
         return Conversion(operand, c.Type);
     }
-    
+
     private dynamic EvaluateSelfOperatorExpression(BoundSelfOperatorExpression s)
     {
         var operand = EvaluateExpression(s.Expression);
-        
+
         switch (s.Operator.Kind)
         {
             case BoundBinaryOperatorKind.SelfAddition:
@@ -273,11 +321,11 @@ public sealed class Evaluator
         {
             if (operand is bool)
                 return Conversion(ConvertBool(operand), targetType);
-            if (targetType ==  typeof(bool))
+            if (targetType == typeof(bool))
                 return Conversion(ToBool(operand), targetType);
             if (operand is char)
             {
-                if(targetType == typeof(float))
+                if (targetType == typeof(float))
                     return (float)operand;
                 if (targetType == typeof(double))
                     return (double)operand;
@@ -291,16 +339,26 @@ public sealed class Evaluator
     {
         if (operand is char || operand is short || operand is int || operand is long || operand is float || operand is double)
             return operand != 0;
-        if(operand is bool)
+        if (operand is bool)
             return operand;
         new LogDefinition(LogLevel.Error, $"不能隐式转换类型 <{operand.GetType()}> 到 <Boolean>", true).Raise();
         return false;
     }
-    
+
     private dynamic ConvertBool(dynamic operand)
     {
-        if(operand is bool)
-            return operand?1:0;
+        if (operand is bool)
+            return operand ? 1 : 0;
         return operand;
     }
+
+    private sealed class ReturnException : Exception
+    {
+        public dynamic Value { get; }
+        public ReturnException(dynamic value) { Value = value; }
+    }
+
+    private sealed class BreakException : Exception { }
+
+    private sealed class ContinueException : Exception { }
 }

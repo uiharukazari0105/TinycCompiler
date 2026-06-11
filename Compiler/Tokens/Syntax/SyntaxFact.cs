@@ -30,6 +30,9 @@ public static class SyntaxFact
         ("for", SyntaxKind.ForKeyword),
         ("while", SyntaxKind.WhileKeyword),
 
-        ("return", SyntaxKind.ReturnKeyword)
+        ("return", SyntaxKind.ReturnKeyword),
+
+        ("break", SyntaxKind.BreakKeyword),
+        ("continue", SyntaxKind.ContinueKeyword)
     ];
 }

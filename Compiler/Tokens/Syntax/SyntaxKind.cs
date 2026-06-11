@@ -68,6 +68,8 @@ public enum SyntaxKind
     BoolKeyword,
     CharKeyword,
     ReturnKeyword,
+    BreakKeyword,
+    ContinueKeyword,
 
     //Statements
     BlockStatement,
@@ -78,7 +80,10 @@ public enum SyntaxKind
     WhileStatement,
     ForStatement,
     EmptyStatement,
-    FunctionDeclaration
+    FunctionDeclaration,
+    ReturnStatement,
+    BreakStatement,
+    ContinueStatement
 }
 
 public static class SyntaxKindExtensions

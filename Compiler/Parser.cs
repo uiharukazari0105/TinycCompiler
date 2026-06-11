@@ -67,6 +67,21 @@ public class Parser
             result = ParseWhileKeyword();
         else if (Current.Kind == SyntaxKind.ForKeyword)
             result = ParseForKeyword();
+        else if (Current.Kind == SyntaxKind.ReturnKeyword)
+        {
+            result = ParseReturnStatement();
+            matchEndLine = true;
+        }
+        else if (Current.Kind == SyntaxKind.BreakKeyword)
+        {
+            result = new BreakStatementSyntax(NextToken());
+            matchEndLine = true;
+        }
+        else if (Current.Kind == SyntaxKind.ContinueKeyword)
+        {
+            result = new ContinueStatementSyntax(NextToken());
+            matchEndLine = true;
+        }
         else
         {
             result = ParseExpressionStatement();
@@ -132,6 +147,15 @@ public class Parser
         var closeParen = Match(SyntaxKind.CloseParenthesis); // )
         var body = (BlockStatementSyntax)ParseBlockStatement(); // { ... }
         return new FunctionDeclarationSyntax(returnType, identifier, openParen, closeParen, body);
+    }
+
+    private StatementSyntax ParseReturnStatement()
+    {
+        var keyword = Match(SyntaxKind.ReturnKeyword);
+        ExpressionSyntax? expression = null;
+        if (Current.Kind != SyntaxKind.Semicolon)
+            expression = ParseExpression();
+        return new ReturnStatementSyntax(keyword, expression);
     }
 
     private StatementSyntax ParseIfStatement()

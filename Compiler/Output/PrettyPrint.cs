@@ -100,10 +100,15 @@ public static class PrettyPrint
             ("EmptyStatement", "空语句"),
 
             ("IfStatement", "if语句"),
+            ("ElseClause", "else悬挂"),
             ("WhileStatement", "while循环"),
             ("ForStatement", "for循环"),
 
+            ("FunctionDeclarationStatement", "函数声明语句"),
             ("FunctionDeclaration", "函数声明"),
+            ("ReturnStatement", "返回语句"),
+            ("BreakStatement", "break语句"),
+            ("ContinueStatement", "continue语句"),
 
             ("VariableDeclarationStatement", "变量声明"),
 
@@ -173,6 +178,9 @@ public static class PrettyPrint
             ("ElseKeyword", "否则关键字"),
             ("ForKeyword", "for循环关键字"),
             ("WhileKeyword", "while循环关键字"),
+            ("ReturnKeyword", "返回关键字"),
+            ("ContinueKeyword", "跳过循环关键字"),
+            ("BreakKeyword", "打破循环关键字"),
 
             ("True", "真"),
             ("False", "假"),
