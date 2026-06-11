@@ -10,4 +10,9 @@ public sealed class BoundVariableExpression: BoundExpression
     {
         Variable = variable;
     }
+
+    public override IEnumerable<BoundNode> GetChildren()
+    {
+        return [];
+    }
 }

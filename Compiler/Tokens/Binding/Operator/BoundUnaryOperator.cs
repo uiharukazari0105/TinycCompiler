@@ -23,6 +23,7 @@ public sealed class BoundUnaryOperator
 
     private static readonly BoundUnaryOperator[] _rules =
     [
+        new(SyntaxKind.Exclamation, typeof(int), BoundUnaryOperatorKind.LogicalNegation),
         new(SyntaxKind.Exclamation, typeof(bool), BoundUnaryOperatorKind.LogicalNegation),
         new(SyntaxKind.Plus, typeof(int), BoundUnaryOperatorKind.Identity),
         new(SyntaxKind.Minus, typeof(int), BoundUnaryOperatorKind.Negation),

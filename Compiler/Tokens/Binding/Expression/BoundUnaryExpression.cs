@@ -15,4 +15,9 @@ public sealed class BoundUnaryExpression: BoundExpression
         Operator = boundUnaryOperator;
         Operand = operand;
     }
+
+    public override IEnumerable<BoundNode> GetChildren()
+    {
+        yield return Operand;
+    }
 }

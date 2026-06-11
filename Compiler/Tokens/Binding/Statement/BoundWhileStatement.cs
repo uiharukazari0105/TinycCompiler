@@ -13,4 +13,9 @@ public sealed class BoundWhileStatement: BoundStatement
         Condition = condition;
         Statement = statement;
     }
+
+    public override IEnumerable<BoundNode> GetChildren()
+    {
+        yield return Condition;
+    }
 }

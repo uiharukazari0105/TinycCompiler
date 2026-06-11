@@ -32,15 +32,15 @@ public class Lexer
         if (Current == '\0') //处理结束
             return new SyntaxToken(SyntaxKind.EndOfFile, _position, "\0");
         
-        if (char.IsDigit(Current)) //处理数字
+        if (char.IsDigit(Current) || Current == '.') //处理数字
         {
             var start = _position;
-            while (char.IsDigit(Current) || Current == '_')
+            while (char.IsDigit(Current) || Current == '_' || Current == '.')
                 Next();
             var length = _position - start;
             var text = _text.Substring(start, length);
 
-            if (text[^1] == '_' || text.Contains("__"))
+            if (text[^1] == '_' || text.Contains("__") || text.Count('.') > 1)
             {
                 Diagnostics.Add(new LogDefinition(LogLevel.Error, $"不合理的数字格式标识 <{text}>", true));
                 return new SyntaxToken(SyntaxKind.Bad, start, text);

@@ -45,7 +45,11 @@ public class Parser
             result = new EmptyStatementSyntax(Match(SyntaxKind.Semicolon));
         else if (Current.Kind == SyntaxKind.OpenBrace)
             result = ParseBlockStatement();
-        else if (Current.Kind == SyntaxKind.IntKeyword)
+        else if (Current.Kind == SyntaxKind.ShortKeyword ||
+                 Current.Kind == SyntaxKind.IntKeyword ||
+                 Current.Kind == SyntaxKind.LongKeyword ||
+                 Current.Kind == SyntaxKind.FloatKeyword ||
+                 Current.Kind == SyntaxKind.DoubleKeyword)
         {
             result = ParseVariableDeclarationStatement();
             matchEndLine = true;
@@ -88,7 +92,7 @@ public class Parser
 
     private StatementSyntax ParseVariableDeclarationStatement()
     {
-        var keyword = Match(SyntaxKind.IntKeyword);
+        var keyword = NextToken();
         var identifier = Match(SyntaxKind.Identifier);
         var equals = Match(SyntaxKind.Equals);
         var initialize = ParseExpression();
@@ -115,7 +119,7 @@ public class Parser
     
     private StatementSyntax ParseWhileKeyword()
     {
-        var keyword =  Match(SyntaxKind.WhileKeyword);
+        var keyword = Match(SyntaxKind.WhileKeyword);
         var condition = ParseExpression();
         var statement = ParseStatement();
         return new WhileStatementSyntax(keyword, condition, statement);

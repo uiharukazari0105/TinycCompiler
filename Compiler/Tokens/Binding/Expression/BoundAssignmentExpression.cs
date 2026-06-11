@@ -12,4 +12,9 @@ public class BoundAssignmentExpression: BoundExpression
         Variable = variable;
         Expression = expression;
     }
+
+    public override IEnumerable<BoundNode> GetChildren()
+    {
+        yield return Expression;
+    }
 }

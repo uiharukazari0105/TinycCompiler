@@ -12,4 +12,10 @@ public sealed class BoundBlockStatement: BoundStatement
     {
         Statements = statements;
     }
+
+    public override IEnumerable<BoundNode> GetChildren()
+    {
+        foreach (var boundStatement in Statements)
+            yield return boundStatement;
+    }
 }

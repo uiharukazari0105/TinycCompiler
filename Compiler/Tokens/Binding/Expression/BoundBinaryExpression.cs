@@ -16,4 +16,10 @@ public class BoundBinaryExpression: BoundExpression
         Operator = boundBinaryOperator;
         Right = right;
     }
+
+    public override IEnumerable<BoundNode> GetChildren()
+    {
+        yield return Left;
+        yield return Right;
+    }
 }

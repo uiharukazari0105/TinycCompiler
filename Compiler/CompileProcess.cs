@@ -49,9 +49,10 @@ public class CompileProcess: IDisposable
         GlobalScope = Binder.BindGlobalScope(GlobalScope ,SyntaxTree.Root);
 
         var boundStatement = GlobalScope.Statement;
+        
         var color = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Green;
-        PrettyPrint.Out(SyntaxTree.Root);
+        Console.WriteLine(PrettyPrint.OutDoubleTree(SyntaxTree, boundStatement, 3, true));
         Console.ForegroundColor = color;
 
         var evaluator = new Evaluator(boundStatement, Variables);
@@ -59,6 +60,8 @@ public class CompileProcess: IDisposable
         List<LogDefinition> diagnostics = [];
         diagnostics.AddRange(SyntaxTree.Diagnostics);
         diagnostics.AddRange(GlobalScope.Diagnostics);
+        Logger.RaiseMany(diagnostics);
+        
         return new EvaluationResult(diagnostics, evaluator.Evaluate());
     }
 

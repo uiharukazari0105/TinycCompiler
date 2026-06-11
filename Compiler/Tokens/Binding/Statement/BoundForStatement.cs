@@ -19,4 +19,15 @@ public class BoundForStatement: BoundStatement
         StepStatements = stepStatements;
         Statement = statement;
     }
+
+    public override IEnumerable<BoundNode> GetChildren()
+    {
+        foreach (var initializer in Initializers)
+            yield return initializer;
+        if (Condition is not null)
+            yield return Condition;
+        foreach (var stepStatement in StepStatements)
+            yield return stepStatement;
+        yield return Statement;
+    }
 }

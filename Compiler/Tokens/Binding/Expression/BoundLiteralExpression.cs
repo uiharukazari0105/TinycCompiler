@@ -10,4 +10,9 @@ public sealed class BoundLiteralExpression: BoundExpression
     {
         Value = value;
     }
+
+    public override IEnumerable<BoundNode> GetChildren()
+    {
+        return [];
+    }
 }

@@ -75,13 +75,7 @@ public sealed class Evaluator
     
     private void EvaluateIfStatement(BoundIfStatement node)
     {
-        var rawCondition = EvaluateExpression(node.Condition);
-        bool condition;
-        if (rawCondition is int || rawCondition is long || rawCondition is float || rawCondition is double)
-            condition = rawCondition != 0;
-        else
-            condition = (bool)rawCondition;
-        if (condition)
+        if (ToBool(EvaluateExpression(node.Condition)))
             EvaluateStatement(node.ThenStatement);
         else if(node.ElseStatement is not null)
             EvaluateStatement(node.ElseStatement);
@@ -89,7 +83,7 @@ public sealed class Evaluator
     
     private void EvaluateWhileStatement(BoundWhileStatement node)
     {
-        while ((bool)EvaluateExpression(node.Condition))
+        while (ToBool(EvaluateExpression(node.Condition)))
             EvaluateStatement(node.Statement);
     }
     
@@ -97,7 +91,7 @@ public sealed class Evaluator
     {
         foreach (var initializer in node.Initializers)
             EvaluateStatement(initializer);
-        for (; node.Condition is null?true:EvaluateExpression(node.Condition);)
+        for (; node.Condition is null?true:ToBool(EvaluateExpression(node.Condition));)
         {
             EvaluateStatement(node.Statement);
             foreach (var statement in node.StepStatements)
@@ -152,7 +146,7 @@ public sealed class Evaluator
             case BoundUnaryOperatorKind.Negation:
                 return -operand;
             case BoundUnaryOperatorKind.LogicalNegation:
-                return !operand;
+                return !ToBool(operand);
             case BoundUnaryOperatorKind.BitwiseNot:
                 return ~operand;
             default:
@@ -179,13 +173,13 @@ public sealed class Evaluator
             case BoundBinaryOperatorKind.BitwiseAnd:
                 return left & right;
             case BoundBinaryOperatorKind.LogicalAnd:
-                return left && right;
+                return ToBool(left) && ToBool(right);
             case BoundBinaryOperatorKind.BitwiseOr:
                 return left | right;
             case BoundBinaryOperatorKind.LogicalOr:
-                return left || right;
+                return ToBool(left) || ToBool(right);
             case BoundBinaryOperatorKind.Equality:
-                return left == right;
+                return ToBool(left) == ToBool(right);
             case BoundBinaryOperatorKind.Inequality:
                 return left != right;
             case BoundBinaryOperatorKind.Less:
@@ -202,5 +196,15 @@ public sealed class Evaluator
                 new LogDefinition(LogLevel.Error, $"非预期运算符 <{b.Operator.Kind}>", true).Raise();
                 return 0;
         }
+    }
+
+    private bool ToBool(dynamic operand)
+    {
+        if (operand is int || operand is long || operand is float || operand is double)
+            return operand != 0;
+        if(operand is bool)
+            return operand;
+        new LogDefinition(LogLevel.Error, $"不能隐式转换类型 <{operand.GetType()}> 到 <Boolean>", true).Raise();
+        return false;
     }
 }

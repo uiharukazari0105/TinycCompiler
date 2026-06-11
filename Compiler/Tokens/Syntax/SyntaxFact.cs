@@ -4,24 +4,28 @@ public static class SyntaxFact
 {
     public static SyntaxKind GetKeywordKind(string text)
     {
-        switch (text)
-        {
-            case "true":
-                return SyntaxKind.TrueKeyword;
-            case "false":
-                return SyntaxKind.FalseKeyword;
-            case "int":
-                return SyntaxKind.IntKeyword;
-            case "if":
-                return SyntaxKind.IfKeyWord;
-            case "else":
-                return SyntaxKind.ElseKeyword;
-            case "for":
-                return SyntaxKind.ForKeyword;
-            case "while":
-                return SyntaxKind.WhileKeyword;
-            default:
-                return SyntaxKind.Identifier;
-        }
+        foreach (var rule in _rules)
+            if(rule.Item1 == text)
+                return  rule.Item2;
+        
+        return SyntaxKind.Identifier;
     }
+
+    private static readonly List<(string, SyntaxKind)> _rules =
+    [
+        ("short", SyntaxKind.ShortKeyword),
+        ("int", SyntaxKind.IntKeyword),
+        ("long", SyntaxKind.LongKeyword),
+        ("float", SyntaxKind.FloatKeyword),
+        ("double", SyntaxKind.DoubleKeyword),
+        
+        ("true", SyntaxKind.TrueKeyword),
+        ("false", SyntaxKind.FalseKeyword),
+        
+        ("if", SyntaxKind.IfStatement),
+        ("else", SyntaxKind.ElseKeyword),
+        
+        ("for", SyntaxKind.ForKeyword),
+        ("while", SyntaxKind.WhileKeyword)
+    ];
 }

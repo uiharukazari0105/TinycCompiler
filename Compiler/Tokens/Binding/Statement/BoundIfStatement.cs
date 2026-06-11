@@ -15,4 +15,12 @@ public class BoundIfStatement: BoundStatement
         ThenStatement = thenStatement;
         ElseStatement = elseStatement;
     }
+
+    public override IEnumerable<BoundNode> GetChildren()
+    {
+        yield return Condition;
+        yield return ThenStatement;
+        if (ElseStatement is not null)
+            yield return ElseStatement;
+    }
 }
