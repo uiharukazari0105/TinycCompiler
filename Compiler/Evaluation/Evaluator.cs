@@ -145,13 +145,8 @@ public sealed class Evaluator
             catch (ContinueException) { }
             catch (BreakException) { break; }
 
-            try
-            {
-                foreach (var statement in node.StepStatements)
-                    EvaluateStatement(statement);
-            }
-            catch (ContinueException) { }
-            catch (BreakException) { break; }
+            if (node.StepExpression is not null)
+                EvaluateExpression(node.StepExpression);
         }
     }
 
@@ -173,6 +168,8 @@ public sealed class Evaluator
                 return EvaluateConversionExpression(c);
             case BoundSelfOperatorExpression s:
                 return EvaluateSelfOperatorExpression(s);
+            case BoundCommaExpression c:
+                return EvaluateCommaExpression(c);
             default:
                 new LogDefinition(LogLevel.Error, $"无法解析的节点 <{node.Kind}>", true).Raise();
                 return 0;
@@ -292,6 +289,12 @@ public sealed class Evaluator
                 new LogDefinition(LogLevel.Error, $"非预期运算符 <{s.Operator.Kind}>", true).Raise();
                 return 0;
         }
+    }
+
+    private dynamic EvaluateCommaExpression(BoundCommaExpression c)
+    {
+        EvaluateExpression(c.Left); // evaluate and discard
+        return EvaluateExpression(c.Right);
     }
 
     private dynamic Conversion(dynamic operand, Type targetType)

@@ -116,27 +116,39 @@ public class Parser
     {
         var keyword = NextToken();
 
-        var identifiers = ImmutableArray.CreateBuilder<SyntaxToken>();
+        var declarators = ImmutableArray.CreateBuilder<VariableDeclaratorSyntax>();
         var commas = ImmutableArray.CreateBuilder<SyntaxToken>();
 
-        identifiers.Add(Match(SyntaxKind.Identifier));
+        // first declarator
+        {
+            var id = Match(SyntaxKind.Identifier);
+            SyntaxToken? eq = null;
+            ExpressionSyntax? init = null;
+            if (Peek(0).Kind != SyntaxKind.Semicolon && Peek(0).Kind != SyntaxKind.Comma)
+            {
+                eq = Match(SyntaxKind.Equals);
+                init = ParseAssignmentExpression();
+            }
+            declarators.Add(new VariableDeclaratorSyntax(id, eq, init));
+        }
 
+        // additional declarators
         while (Peek(0).Kind == SyntaxKind.Comma)
         {
             commas.Add(Match(SyntaxKind.Comma));
-            identifiers.Add(Match(SyntaxKind.Identifier));
-        }
-
-        SyntaxToken? equals = null;
-        ExpressionSyntax? initializer = null;
-        if (Peek(0).Kind != SyntaxKind.Semicolon)
-        {
-            equals = Match(SyntaxKind.Equals);
-            initializer = ParseExpression();
+            var id = Match(SyntaxKind.Identifier);
+            SyntaxToken? eq = null;
+            ExpressionSyntax? init = null;
+            if (Peek(0).Kind != SyntaxKind.Semicolon && Peek(0).Kind != SyntaxKind.Comma)
+            {
+                eq = Match(SyntaxKind.Equals);
+                init = ParseAssignmentExpression();
+            }
+            declarators.Add(new VariableDeclaratorSyntax(id, eq, init));
         }
 
         return new VariableDeclarationStatementSyntax(keyword,
-            identifiers.ToImmutable(), commas.ToImmutable(), equals, initializer);
+            declarators.ToImmutable(), commas.ToImmutable());
     }
 
     private StatementSyntax ParseFunctionDeclaration()
@@ -188,29 +200,25 @@ public class Parser
     {
         var keyword = Match(SyntaxKind.ForKeyword);
         var openParenthesis = Match(SyntaxKind.OpenParenthesis);
-        
+
         List<StatementSyntax> initializers = [];
         if (Current.Kind != SyntaxKind.Semicolon)
             do
             {
-                if(Current.Kind == SyntaxKind.Comma)
+                if (Current.Kind == SyntaxKind.Comma)
                     Match(SyntaxKind.Comma);
                 initializers.Add(ParseStatement(false));
             } while (Current.Kind != SyntaxKind.Semicolon);
         Match(SyntaxKind.Semicolon);
-        var condition = Current.Kind == SyntaxKind.Semicolon? null: ParseExpression();
+        var condition = Current.Kind == SyntaxKind.Semicolon ? null : ParseExpression();
         Match(SyntaxKind.Semicolon);
-        List<StatementSyntax> stepStatements = [];
-        if(Current.Kind != SyntaxKind.CloseParenthesis)
-            do
-            {
-                if(Current.Kind == SyntaxKind.Comma)
-                    Match(SyntaxKind.Comma);
-                stepStatements.Add(ParseStatement(false));
-            }while (Current.Kind != SyntaxKind.CloseParenthesis);
+        ExpressionSyntax? stepExpression = null;
+        if (Current.Kind != SyntaxKind.CloseParenthesis)
+            stepExpression = ParseExpression();
         var closeParenthesisToken = Match(SyntaxKind.CloseParenthesis);
-        var statement =  ParseStatement();
-        return new ForStatementSyntax(keyword, openParenthesis, initializers, condition, stepStatements, closeParenthesisToken, statement);
+        var statement = ParseStatement();
+        return new ForStatementSyntax(keyword, openParenthesis, initializers, condition,
+            stepExpression, closeParenthesisToken, statement);
     }
 
     private SyntaxToken Match(SyntaxKind kind)
@@ -241,7 +249,19 @@ public class Parser
 
     private ExpressionSyntax ParseExpression()
     {
-        return ParseAssignmentExpression();
+        return ParseCommaExpression();
+    }
+
+    private ExpressionSyntax ParseCommaExpression()
+    {
+        var left = ParseAssignmentExpression();
+        while (Current.Kind == SyntaxKind.Comma)
+        {
+            var comma = NextToken();
+            var right = ParseAssignmentExpression();
+            left = new CommaExpressionSyntax(left, comma, right);
+        }
+        return left;
     }
     
     private ExpressionSyntax ParseParenthesizedExpression()

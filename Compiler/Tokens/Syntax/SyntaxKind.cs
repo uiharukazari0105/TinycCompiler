@@ -50,6 +50,7 @@ public enum SyntaxKind
     UnaryExpression,
     NameExpression,
     AssignmentExpression,
+    CommaExpression,
     CompilationUnit,
     
     //Keywords
@@ -83,7 +84,8 @@ public enum SyntaxKind
     FunctionDeclaration,
     ReturnStatement,
     BreakStatement,
-    ContinueStatement
+    ContinueStatement,
+    VariableDeclarator
 }
 
 public static class SyntaxKindExtensions

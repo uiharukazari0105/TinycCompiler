@@ -123,9 +123,6 @@ public sealed class Binder
     private BoundStatement BindVariableDeclarationStatement(VariableDeclarationStatementSyntax syntax)
     {
         var statements = ImmutableArray.CreateBuilder<BoundStatement>();
-        var initializer = syntax.Initializer is null
-            ? new BoundLiteralExpression(0)
-            : BindExpression(syntax.Initializer);
 
         var keywordType = syntax.Keyword.Kind switch
         {
@@ -139,12 +136,16 @@ public sealed class Binder
             _ => typeof(object)
         };
 
-        if (initializer.Type != keywordType)
-            initializer = BindConversion(keywordType, initializer);
-
-        foreach (var identifier in syntax.Identifiers)
+        foreach (var declarator in syntax.Declarators)
         {
-            var name = identifier.Text;
+            var name = declarator.Identifier.Text;
+            var initializer = declarator.Initializer is null
+                ? new BoundLiteralExpression(0)
+                : BindExpression(declarator.Initializer);
+
+            if (initializer.Type != keywordType)
+                initializer = BindConversion(keywordType, initializer);
+
             var variable = new VariableSymbol(name, initializer.Type);
 
             if (!_scope.TryDeclare(variable))
@@ -180,13 +181,13 @@ public sealed class Binder
         List<BoundStatement> initializers = [];
         foreach (var initializer in syntax.Initializers)
             initializers.Add(BindStatement(initializer));
-        var condition = syntax.Condition is null?null:BindExpression(syntax.Condition);
-        List<BoundStatement> stepStatements = [];
-        foreach (var stepStatement in syntax.StepStatements)
-            stepStatements.Add(BindStatement(stepStatement));
+        var condition = syntax.Condition is null ? null : BindExpression(syntax.Condition);
+        var stepExpression = syntax.StepExpression is null
+            ? null
+            : BindExpression(syntax.StepExpression);
         var statement = BindStatement(syntax.ThenStatement);
         _scope = _scope.Parent!;
-        return new BoundForStatement(initializers, condition, stepStatements, statement);
+        return new BoundForStatement(initializers, condition, stepExpression, statement);
     }
 
     private BoundExpression BindExpression(ExpressionSyntax syntax)
@@ -205,6 +206,8 @@ public sealed class Binder
                 return BindNameExpression((NameExpressionSyntax)syntax);
             case SyntaxKind.AssignmentExpression:
                 return BindAssignmentExpression((AssignmentExpressionSyntax)syntax);
+            case SyntaxKind.CommaExpression:
+                return BindCommaExpression((CommaExpressionSyntax)syntax);
         }
 
         Diagnostics.Add(new LogDefinition(LogLevel.Error, $"没有这样的表达式类型 <{syntax.Kind}>", true));
@@ -288,6 +291,13 @@ public sealed class Binder
             return boundExpression;
         }
         return new BoundSelfOperatorExpression(variable, boundOperator, boundExpression);
+    }
+
+    private BoundExpression BindCommaExpression(CommaExpressionSyntax syntax)
+    {
+        var left = BindExpression(syntax.Left);
+        var right = BindExpression(syntax.Right);
+        return new BoundCommaExpression(left, right);
     }
 
     private static Dictionary<Type, uint> _typeLevels = new Dictionary<Type, uint>

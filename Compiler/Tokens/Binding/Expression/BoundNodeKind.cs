@@ -10,6 +10,7 @@ public enum BoundNodeKind
     AssignmentExpression,
     ConversionExpression,
     SelfOperatorExpression,
+    CommaExpression,
     
     //Statements
     BlockStatement,

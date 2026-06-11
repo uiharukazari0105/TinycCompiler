@@ -3,40 +3,30 @@ using Compiler.Tokens.Syntax.Expression;
 
 namespace Compiler.Tokens.Syntax.Statement;
 
-public sealed class VariableDeclarationStatementSyntax: StatementSyntax
+public sealed class VariableDeclarationStatementSyntax : StatementSyntax
 {
     public SyntaxToken Keyword { get; }
-    public ImmutableArray<SyntaxToken> Identifiers { get; }
+    public ImmutableArray<VariableDeclaratorSyntax> Declarators { get; }
     public ImmutableArray<SyntaxToken> Commas { get; }
-    public SyntaxToken? EqualsToken { get; }
-    public ExpressionSyntax? Initializer { get; }
     public override SyntaxKind Kind => SyntaxKind.VariableDeclarationStatement;
 
     public VariableDeclarationStatementSyntax(SyntaxToken keyword,
-        ImmutableArray<SyntaxToken> identifiers,
-        ImmutableArray<SyntaxToken> commas,
-        SyntaxToken? equalsToken,
-        ExpressionSyntax? initializer)
+        ImmutableArray<VariableDeclaratorSyntax> declarators,
+        ImmutableArray<SyntaxToken> commas)
     {
         Keyword = keyword;
-        Identifiers = identifiers;
+        Declarators = declarators;
         Commas = commas;
-        EqualsToken = equalsToken;
-        Initializer = initializer;
     }
 
     public override IEnumerable<SyntaxNode> GetChildren()
     {
         yield return Keyword;
-        for (var i = 0; i < Identifiers.Length; i++)
+        for (var i = 0; i < Declarators.Length; i++)
         {
-            yield return Identifiers[i];
+            yield return Declarators[i];
             if (i < Commas.Length)
                 yield return Commas[i];
         }
-        if (EqualsToken != null)
-            yield return EqualsToken;
-        if (Initializer is not null)
-            yield return Initializer;
     }
 }

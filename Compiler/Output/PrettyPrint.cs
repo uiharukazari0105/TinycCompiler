@@ -111,6 +111,7 @@ public static class PrettyPrint
             ("ContinueStatement", "continue语句"),
 
             ("VariableDeclarationStatement", "变量声明"),
+            ("VariableDeclarator", "声明器"),
 
             ("UnaryExpression", "一元运算表达式"),
             ("BinaryExpression", "二元运算表达式"),
@@ -121,6 +122,7 @@ public static class PrettyPrint
             ("NameExpression", "变量名"),
             ("ConversionExpression", "类型转换表达式"),
             ("SelfOperatorExpression", "复合赋值表达式"),
+            ("CommaExpression", "逗号表达式"),
 
             ("Type:Double", "类型:双精度浮点型"),
             ("Type", "类型"),

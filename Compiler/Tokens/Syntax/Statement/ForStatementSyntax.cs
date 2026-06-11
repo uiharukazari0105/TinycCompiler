@@ -8,28 +8,28 @@ public class ForStatementSyntax: StatementSyntax
     public SyntaxToken OpenParenthesisToken { get; }
     public List<StatementSyntax> Initializers { get; }
     public ExpressionSyntax? Condition { get; }
-    public List<StatementSyntax> StepStatements { get; }
+    public ExpressionSyntax? StepExpression { get; }
     public SyntaxToken CloseParenthesisToken { get; }
     public StatementSyntax ThenStatement { get; }
     public override SyntaxKind Kind => SyntaxKind.ForStatement;
 
-    public ForStatementSyntax(SyntaxToken forKeyword, 
-        SyntaxToken openParenthesisToken, 
+    public ForStatementSyntax(SyntaxToken forKeyword,
+        SyntaxToken openParenthesisToken,
         List<StatementSyntax> initializers,
         ExpressionSyntax? condition,
-        List<StatementSyntax> stepStatements,
-        SyntaxToken closeParenthesisToken, 
+        ExpressionSyntax? stepExpression,
+        SyntaxToken closeParenthesisToken,
         StatementSyntax thenStatement)
     {
         ForKeyword = forKeyword;
         OpenParenthesisToken = openParenthesisToken;
         Initializers = initializers;
         Condition = condition;
-        StepStatements = stepStatements;
+        StepExpression = stepExpression;
         CloseParenthesisToken = closeParenthesisToken;
         ThenStatement = thenStatement;
     }
-    
+
     public override IEnumerable<SyntaxNode> GetChildren()
     {
         yield return ForKeyword;
@@ -38,8 +38,8 @@ public class ForStatementSyntax: StatementSyntax
             yield return initializer;
         if(Condition is not null)
             yield return Condition;
-        foreach(var stepStatement in StepStatements)
-            yield return stepStatement;
+        if(StepExpression is not null)
+            yield return StepExpression;
         yield return CloseParenthesisToken;
         yield return ThenStatement;
     }
