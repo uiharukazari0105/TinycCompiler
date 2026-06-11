@@ -170,6 +170,10 @@ public sealed class Evaluator
                 return EvaluateSelfOperatorExpression(s);
             case BoundCommaExpression c:
                 return EvaluateCommaExpression(c);
+            case BoundPrefixExpression p:
+                return EvaluatePrefixExpression(p);
+            case BoundPostfixExpression p:
+                return EvaluatePostfixExpression(p);
             default:
                 new LogDefinition(LogLevel.Error, $"无法解析的节点 <{node.Kind}>", true).Raise();
                 return 0;
@@ -295,6 +299,21 @@ public sealed class Evaluator
     {
         EvaluateExpression(c.Left); // evaluate and discard
         return EvaluateExpression(c.Right);
+    }
+
+    private dynamic EvaluatePrefixExpression(BoundPrefixExpression p)
+    {
+        var delta = p.OperatorKind == BoundUnaryOperatorKind.PrefixIncrement ? 1 : -1;
+        _variables[p.Variable] += delta;
+        return _variables[p.Variable];
+    }
+
+    private dynamic EvaluatePostfixExpression(BoundPostfixExpression p)
+    {
+        var old = _variables[p.Variable];
+        var delta = p.OperatorKind == BoundUnaryOperatorKind.PostfixIncrement ? 1 : -1;
+        _variables[p.Variable] += delta;
+        return old;
     }
 
     private dynamic Conversion(dynamic operand, Type targetType)

@@ -11,6 +11,8 @@ public enum BoundNodeKind
     ConversionExpression,
     SelfOperatorExpression,
     CommaExpression,
+    PrefixExpression,
+    PostfixExpression,
     
     //Statements
     BlockStatement,

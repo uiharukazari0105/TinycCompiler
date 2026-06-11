@@ -113,6 +113,8 @@ public class Lexer
                     return new SyntaxToken(SyntaxKind.AddEquals, _position += 2, "+=");
                 return new SyntaxToken(SyntaxKind.Plus, _position++, "+");
             case '-':
+                if(AHead == '-')
+                    return new SyntaxToken(SyntaxKind.DoubleMinus, _position += 2, "--");
                 if(AHead == '=')
                     return new SyntaxToken(SyntaxKind.MinusEquals, _position += 2, "-=");
                 return new SyntaxToken(SyntaxKind.Minus, _position++, "-");

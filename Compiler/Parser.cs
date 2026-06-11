@@ -369,7 +369,15 @@ public class Parser
         }
         else
             left = ParsePrimaryExpression();
-        
+
+        // postfix ++ / --
+        while (Current.Kind == SyntaxKind.DoublePlus ||
+               Current.Kind == SyntaxKind.DoubleMinus)
+        {
+            var operatorToken = NextToken();
+            left = new PostfixExpressionSyntax(left, operatorToken);
+        }
+
         while (true)
         {
             var precedence = Current.Kind.GetBinaryPrecedence();

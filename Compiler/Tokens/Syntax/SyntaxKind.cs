@@ -8,6 +8,7 @@ public enum SyntaxKind
     WhiteSpace,
     Plus,
     DoublePlus,
+    DoubleMinus,
     Minus,
     Star,
     Slash,
@@ -51,6 +52,7 @@ public enum SyntaxKind
     NameExpression,
     AssignmentExpression,
     CommaExpression,
+    PostfixExpression,
     CompilationUnit,
     
     //Keywords
@@ -114,6 +116,7 @@ public static class SyntaxKindExtensions
             {
                 SyntaxKind.Plus or SyntaxKind.Minus or SyntaxKind.Exclamation or SyntaxKind.Tilde => 7,
                 SyntaxKind.DoublePlus => 8,
+                SyntaxKind.DoubleMinus => 8,
                 _ => 0
             };
         }

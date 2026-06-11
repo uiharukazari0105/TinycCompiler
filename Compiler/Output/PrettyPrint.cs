@@ -123,6 +123,8 @@ public static class PrettyPrint
             ("ConversionExpression", "类型转换表达式"),
             ("SelfOperatorExpression", "复合赋值表达式"),
             ("CommaExpression", "逗号表达式"),
+            ("PostfixExpression", "后缀表达式"),
+            ("PrefixExpression", "前缀表达式"),
 
             ("Type:Double", "类型:双精度浮点型"),
             ("Type", "类型"),
@@ -139,6 +141,7 @@ public static class PrettyPrint
             ("WhiteSpace", "空白"),
             ("Plus", "加号"),
             ("DoublePlus", "自增"),
+            ("DoubleMinus", "自减"),
             ("Minus", "减号"),
             ("Star", "乘号"),
             ("Slash", "除号"),

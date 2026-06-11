@@ -208,6 +208,8 @@ public sealed class Binder
                 return BindAssignmentExpression((AssignmentExpressionSyntax)syntax);
             case SyntaxKind.CommaExpression:
                 return BindCommaExpression((CommaExpressionSyntax)syntax);
+            case SyntaxKind.PostfixExpression:
+                return BindPostfixExpression((PostfixExpressionSyntax)syntax);
         }
 
         Diagnostics.Add(new LogDefinition(LogLevel.Error, $"没有这样的表达式类型 <{syntax.Kind}>", true));
@@ -230,6 +232,11 @@ public sealed class Binder
     
     private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax)
     {
+        // prefix ++ / --
+        if (syntax.OperatorToken.Kind == SyntaxKind.DoublePlus ||
+            syntax.OperatorToken.Kind == SyntaxKind.DoubleMinus)
+            return BindPrefixExpression(syntax);
+
         var boundOperand = BindExpression(syntax.Operand);
         var boundOperator = BoundUnaryOperator.Bind(syntax.OperatorToken.Kind, boundOperand.Type);
         if (boundOperator is null)
@@ -238,6 +245,48 @@ public sealed class Binder
             return boundOperand;
         }
         return new BoundUnaryExpression(boundOperator, boundOperand);
+    }
+
+    private BoundExpression BindPrefixExpression(UnaryExpressionSyntax syntax)
+    {
+        if (syntax.Operand is not NameExpressionSyntax nameExpr)
+        {
+            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"前缀 <{syntax.OperatorToken.Text}> 的操作数必须是变量", true));
+            return new BoundLiteralExpression(0);
+        }
+
+        if (!_scope.TryLookup(nameExpr.IdentifierToken.Text, out var variable))
+        {
+            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"变量 <{nameExpr.IdentifierToken.Text}> 在该作用域没有声明", true));
+            return new BoundLiteralExpression(0);
+        }
+
+        var kind = syntax.OperatorToken.Kind == SyntaxKind.DoublePlus
+            ? BoundUnaryOperatorKind.PrefixIncrement
+            : BoundUnaryOperatorKind.PrefixDecrement;
+
+        return new BoundPrefixExpression(variable!, kind);
+    }
+
+    private BoundExpression BindPostfixExpression(PostfixExpressionSyntax syntax)
+    {
+        if (syntax.Operand is not NameExpressionSyntax nameExpr)
+        {
+            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"后缀 <{syntax.OperatorToken.Text}> 的操作数必须是变量", true));
+            return new BoundLiteralExpression(0);
+        }
+
+        if (!_scope.TryLookup(nameExpr.IdentifierToken.Text, out var variable))
+        {
+            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"变量 <{nameExpr.IdentifierToken.Text}> 在该作用域没有声明", true));
+            return new BoundLiteralExpression(0);
+        }
+
+        var kind = syntax.OperatorToken.Kind == SyntaxKind.DoublePlus
+            ? BoundUnaryOperatorKind.PostfixIncrement
+            : BoundUnaryOperatorKind.PostfixDecrement;
+
+        return new BoundPostfixExpression(variable!, kind);
     }
 
     private BoundExpression BindBinaryExpression(BinaryExpressionSyntax syntax)
