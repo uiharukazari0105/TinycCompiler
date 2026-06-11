@@ -15,7 +15,7 @@ public class Preprocessor
 
     public string Process()
     {
-        FirstCleanup();
+        // FirstCleanup();
         while (!Eof)
             NextChar();
         return _resultBuilder.ToString();
