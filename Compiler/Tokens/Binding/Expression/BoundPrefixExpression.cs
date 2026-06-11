@@ -1,3 +1,5 @@
+using Compiler.Tokens.Binding.Operator;
+
 namespace Compiler.Tokens.Binding.Expression;
 
 public sealed class BoundPrefixExpression : BoundExpression

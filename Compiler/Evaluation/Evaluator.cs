@@ -2,6 +2,7 @@ using Compiler.Output;
 using Compiler.Tokens;
 using Compiler.Tokens.Binding;
 using Compiler.Tokens.Binding.Expression;
+using Compiler.Tokens.Binding.Operator;
 using Compiler.Tokens.Binding.Statement;
 
 namespace Compiler.Evaluation;
