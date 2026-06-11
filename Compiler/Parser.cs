@@ -53,8 +53,13 @@ public class Parser
                  Current.Kind == SyntaxKind.BoolKeyword ||
                  Current.Kind == SyntaxKind.CharKeyword)
         {
-            result = ParseVariableDeclarationStatement();
-            matchEndLine = true;
+            if (Peek(1).Kind == SyntaxKind.Identifier && Peek(2).Kind == SyntaxKind.OpenParenthesis)
+                result = ParseFunctionDeclaration();
+            else
+            {
+                result = ParseVariableDeclarationStatement();
+                matchEndLine = true;
+            }
         }
         else if (Current.Kind == SyntaxKind.IfKeyWord)
             result = ParseIfStatement();
@@ -95,7 +100,18 @@ public class Parser
     private StatementSyntax ParseVariableDeclarationStatement()
     {
         var keyword = NextToken();
-        var identifier = Match(SyntaxKind.Identifier);
+
+        var identifiers = ImmutableArray.CreateBuilder<SyntaxToken>();
+        var commas = ImmutableArray.CreateBuilder<SyntaxToken>();
+
+        identifiers.Add(Match(SyntaxKind.Identifier));
+
+        while (Peek(0).Kind == SyntaxKind.Comma)
+        {
+            commas.Add(Match(SyntaxKind.Comma));
+            identifiers.Add(Match(SyntaxKind.Identifier));
+        }
+
         SyntaxToken? equals = null;
         ExpressionSyntax? initializer = null;
         if (Peek(0).Kind != SyntaxKind.Semicolon)
@@ -103,10 +119,21 @@ public class Parser
             equals = Match(SyntaxKind.Equals);
             initializer = ParseExpression();
         }
-        
-        return new VariableDeclarationStatementSyntax(keyword, identifier, equals, initializer);
+
+        return new VariableDeclarationStatementSyntax(keyword,
+            identifiers.ToImmutable(), commas.ToImmutable(), equals, initializer);
     }
-    
+
+    private StatementSyntax ParseFunctionDeclaration()
+    {
+        var returnType = NextToken(); // type keyword
+        var identifier = Match(SyntaxKind.Identifier); // function name
+        var openParen = Match(SyntaxKind.OpenParenthesis); // (
+        var closeParen = Match(SyntaxKind.CloseParenthesis); // )
+        var body = (BlockStatementSyntax)ParseBlockStatement(); // { ... }
+        return new FunctionDeclarationSyntax(returnType, identifier, openParen, closeParen, body);
+    }
+
     private StatementSyntax ParseIfStatement()
     {
         var keyword = Match(SyntaxKind.IfKeyWord);

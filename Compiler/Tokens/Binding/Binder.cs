@@ -63,6 +63,8 @@ public sealed class Binder
                 return BindExpressionStatement((ExpressionStatementSyntax)syntax);
             case SyntaxKind.VariableDeclarationStatement:
                 return BindVariableDeclarationStatement((VariableDeclarationStatementSyntax)syntax);
+            case SyntaxKind.FunctionDeclaration:
+                return BindFunctionDeclarationStatement((FunctionDeclarationSyntax)syntax);
             case SyntaxKind.IfStatement:
                 return BindIfStatement((IfStatementSyntax)syntax);
             case SyntaxKind.WhileStatement:
@@ -91,7 +93,13 @@ public sealed class Binder
         
         return new BoundBlockStatement(statements.ToImmutable());
     }
-    
+
+    private BoundStatement BindFunctionDeclarationStatement(FunctionDeclarationSyntax syntax)
+    {
+        var body = BindStatement(syntax.Body);
+        return new BoundFunctionDeclarationStatement(body);
+    }
+
     private BoundStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
     {
         var expression = BindExpression(syntax.Expression);
@@ -100,11 +108,11 @@ public sealed class Binder
 
     private BoundStatement BindVariableDeclarationStatement(VariableDeclarationStatementSyntax syntax)
     {
-        var name = syntax.Identifier.Text;
-        
-        var initializer = syntax.Initializer is null?new BoundLiteralExpression(0):BindExpression(syntax.Initializer);
-        //TODO 我也不太清楚这样给定初始值是否合理
-        
+        var statements = ImmutableArray.CreateBuilder<BoundStatement>();
+        var initializer = syntax.Initializer is null
+            ? new BoundLiteralExpression(0)
+            : BindExpression(syntax.Initializer);
+
         var keywordType = syntax.Keyword.Kind switch
         {
             SyntaxKind.ShortKeyword => typeof(short),
@@ -120,12 +128,21 @@ public sealed class Binder
         if (initializer.Type != keywordType)
             initializer = BindConversion(keywordType, initializer);
 
-        
-        var variable = new VariableSymbol(name, initializer.Type);
-        
-        if(!_scope.TryDeclare(variable))
-            Diagnostics.Add(new LogDefinition(LogLevel.Error, $"变量 <{name}> 被重复声明", true));
-        return new BoundVariableDeclarationStatement(variable, initializer);
+        foreach (var identifier in syntax.Identifiers)
+        {
+            var name = identifier.Text;
+            var variable = new VariableSymbol(name, initializer.Type);
+
+            if (!_scope.TryDeclare(variable))
+                Diagnostics.Add(new LogDefinition(LogLevel.Error, $"变量 <{name}> 被重复声明", true));
+
+            statements.Add(new BoundVariableDeclarationStatement(variable, initializer));
+        }
+
+        if (statements.Count == 1)
+            return statements[0];
+
+        return new BoundBlockStatement(statements.ToImmutable());
     }
     
     private BoundStatement BindIfStatement(IfStatementSyntax syntax)

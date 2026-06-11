@@ -28,6 +28,8 @@ public static class SyntaxFact
         ("else", SyntaxKind.ElseKeyword),
         
         ("for", SyntaxKind.ForKeyword),
-        ("while", SyntaxKind.WhileKeyword)
+        ("while", SyntaxKind.WhileKeyword),
+
+        ("return", SyntaxKind.ReturnKeyword)
     ];
 }

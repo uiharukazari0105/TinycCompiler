@@ -47,6 +47,9 @@ public sealed class Evaluator
             case BoundNodeKind.ForStatement:
                 EvaluateForStatement((BoundForStatement)node);
                 break;
+            case BoundNodeKind.FunctionDeclarationStatement:
+                EvaluateFunctionDeclarationStatement((BoundFunctionDeclarationStatement)node);
+                break;
             case BoundNodeKind.EmptyStatement:
                 break;
             default:
@@ -67,7 +70,12 @@ public sealed class Evaluator
         foreach (var variable in node.Statements)
             EvaluateStatement(variable);
     }
-    
+
+    private void EvaluateFunctionDeclarationStatement(BoundFunctionDeclarationStatement node)
+    {
+        EvaluateStatement(node.Body);
+    }
+
     private void EvaluateExpressionStatement(BoundExpressionStatement node)
     {
         _lastValue = EvaluateExpression(node.Expression);

@@ -103,6 +103,8 @@ public static class PrettyPrint
             ("WhileStatement", "while循环"),
             ("ForStatement", "for循环"),
 
+            ("FunctionDeclaration", "函数声明"),
+
             ("VariableDeclarationStatement", "变量声明"),
 
             ("UnaryExpression", "一元运算表达式"),

@@ -67,7 +67,8 @@ public enum SyntaxKind
     WhileKeyword,
     BoolKeyword,
     CharKeyword,
-    
+    ReturnKeyword,
+
     //Statements
     BlockStatement,
     ExpressionStatement,
@@ -76,7 +77,8 @@ public enum SyntaxKind
     ElseClause,
     WhileStatement,
     ForStatement,
-    EmptyStatement
+    EmptyStatement,
+    FunctionDeclaration
 }
 
 public static class SyntaxKindExtensions
