@@ -1,4 +1,5 @@
-﻿using Compiler.Output;
+﻿using Compiler.Ir.Backend;
+using Compiler.Output;
 
 namespace Compiler;
 
@@ -8,7 +9,7 @@ public static class Program
     {
         args = ["./main.c"]; //MOCK
         
-        var compileProcess = new CompileProcess(args);
+        var compileProcess = new CompileProcess(args, BackendKind.X86);
 
         // while (true)
         // {

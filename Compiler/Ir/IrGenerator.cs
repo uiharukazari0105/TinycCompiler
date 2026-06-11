@@ -1,5 +1,4 @@
 using Compiler.Ir.Instruction;
-using Compiler.Tokens.Binding;
 using Compiler.Tokens.Binding.Expression;
 using Compiler.Tokens.Binding.Operator;
 using Compiler.Tokens.Binding.Statement;
@@ -187,9 +186,7 @@ public class IrGenerator
             case BoundPrefixExpression p:
             {
                 var delta = p.OperatorKind == BoundUnaryOperatorKind.PrefixIncrement ? "1" : "-1";
-                var temp = NewTemp();
-                _instructions.Add(new BinaryIr(temp, p.Variable.Name, "+", delta));
-                _instructions.Add(new AssignIr(p.Variable.Name, temp));
+                _instructions.Add(new BinaryIr(p.Variable.Name, p.Variable.Name, "+", delta));
                 return p.Variable.Name;
             }
 
@@ -198,9 +195,7 @@ public class IrGenerator
                 var old = NewTemp();
                 _instructions.Add(new AssignIr(old, p.Variable.Name));
                 var delta = p.OperatorKind == BoundUnaryOperatorKind.PostfixIncrement ? "1" : "-1";
-                var temp = NewTemp();
-                _instructions.Add(new BinaryIr(temp, p.Variable.Name, "+", delta));
-                _instructions.Add(new AssignIr(p.Variable.Name, temp));
+                _instructions.Add(new BinaryIr(p.Variable.Name, p.Variable.Name, "+", delta));
                 return old;
             }
 
