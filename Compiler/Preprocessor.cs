@@ -1,80 +1,120 @@
+using System.Text;
+
 namespace Compiler;
 
-public static class Preprocessor
+public class Preprocessor
 {
-    public static string Process(string source, bool removeNewlines = false)
+    private string _text;
+    private readonly StringBuilder _resultBuilder = new();
+    private int _position;
+
+    public Preprocessor(string text)
     {
-        var result = new System.Text.StringBuilder(source.Length);
-        var i = 0;
+        _text = text;
+    }
 
-        while (i < source.Length)
+    public string Process()
+    {
+        FirstCleanup();
+        while (!Eof)
+            NextChar();
+        return _resultBuilder.ToString();
+    }
+
+    private char Current => Peek();
+    private char AHead => Peek(1);
+
+    private bool Eof => Current == '\0';
+
+    private void Next() => _position++;
+
+    private char Peek(int offset = 0)
+    {
+        var index = _position + offset;
+        if (index >= _text.Length)
+            return '\0';
+        return _text[index];
+    }
+
+    private void FirstCleanup()
+    {
+        var lines = _text.Split('\n').ToList();
+        for (int i = lines.Count - 1; i >= 0; i--)
         {
-            if (i + 1 < source.Length && source[i] == '/' && source[i + 1] == '/')
-            {
-                i += 2;
-                while (i < source.Length && source[i] != '\n')
-                    i++;
-                continue;
-            }
-
-            if (i + 1 < source.Length && source[i] == '/' && source[i + 1] == '*')
-            {
-                i += 2;
-                while (i + 1 < source.Length && !(source[i] == '*' && source[i + 1] == '/'))
-                    i++;
-                i += 2;
-                continue;
-            }
-
-            switch (source[i])
-            {
-                case '"':
-                {
-                    result.Append(source[i++]);
-                    while (i < source.Length && source[i] != '"')
-                    {
-                        if (source[i] == '\\' && i + 1 < source.Length)
-                        {
-                            result.Append(source[i++]);
-                            result.Append(source[i++]);
-                        }
-                        else
-                            result.Append(source[i++]);
-                    }
-
-                    if (i < source.Length)
-                        result.Append(source[i++]);
-                    continue;
-                }
-                case '\'':
-                {
-                    result.Append(source[i++]); //前
-                    while (i < source.Length && source[i] != '\'')
-                    {
-                        if (source[i] == '\\' && i + 1 < source.Length)
-                        {
-                            result.Append(source[i++]);
-                            result.Append(source[i++]);
-                        }
-                        else
-                            result.Append(source[i++]);
-                    }
-
-                    if (i < source.Length)
-                        result.Append(source[i++]); //后
-                    continue;
-                }
-            }
-
-            if (removeNewlines && source[i] == '\n' || source[i] == '\r')
-            {
-                i++;
-                continue;
-            }
-
-            result.Append(source[i++]);
+            lines[i] = lines[i].Trim();
+            if (lines[i].Length == 0)
+                lines.RemoveAt(i);
         }
 
-        return result.ToString();
+        _text = string.Join('\n', lines);
+    }
+
+    private void NextChar()
+    {
+        if (Current == '/' && AHead == '/')
+        {
+            _position += 2;
+            while (Current != '\n' && !Eof)
+                Next();
+        }
+
+        else if (Current == '/' && AHead == '*')
+        {
+            _position += 2;
+            while (!(Current == '*' && AHead == '/') && !Eof)
+                Next();
+            _position += 2;
+        }
+        else if (Current == '"')
+        {
+            _resultBuilder.Append(Current);
+            Next();
+            while (Current != '"' && !Eof)
+            {
+                if (Current == '\\' && !Eof)
+                {
+                    _resultBuilder.Append(Current);
+                    Next();
+                }
+                if (!Eof)
+                {
+                    _resultBuilder.Append(Current);
+                    Next();
+                }
+            }
+            if (!Eof)
+            {
+                _resultBuilder.Append(Current);
+                Next();
+            }
+        }
+        else if (Current == '\'')
+        {
+            _resultBuilder.Append(Current);
+            Next();
+            while (Current != '\'' && !Eof)
+            {
+                if (Current == '\\' && !Eof)
+                {
+                    _resultBuilder.Append(Current);
+                    Next();
+                }
+                if (!Eof)
+                {
+                    _resultBuilder.Append(Current);
+                    Next();
+                }
+            }
+            if (!Eof)
+            {
+                _resultBuilder.Append(Current);
+                Next();
+            }
+        }
+        else
+        {
+            _resultBuilder.Append(Current);
+            Next();
+        }
     }
 }

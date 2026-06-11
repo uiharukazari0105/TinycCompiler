@@ -48,7 +48,7 @@ public class CompileProcess: IDisposable
         var raw = input ?? InputFileReader.ReadToEnd();
         Console.WriteLine("=== 预处理前 ===");
         Console.WriteLine(raw);
-        var source = Preprocessor.Process(raw);
+        var source = new Preprocessor(raw).Process();
         Console.WriteLine("=== 预处理后 ===");
         Console.WriteLine(source);
         SyntaxTree = new SyntaxTree(source);

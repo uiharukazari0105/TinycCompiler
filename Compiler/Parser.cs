@@ -153,11 +153,11 @@ public class Parser
 
     private StatementSyntax ParseFunctionDeclaration()
     {
-        var returnType = NextToken(); // type keyword
-        var identifier = Match(SyntaxKind.Identifier); // function name
-        var openParen = Match(SyntaxKind.OpenParenthesis); // (
-        var closeParen = Match(SyntaxKind.CloseParenthesis); // )
-        var body = (BlockStatementSyntax)ParseBlockStatement(); // { ... }
+        var returnType = NextToken();
+        var identifier = Match(SyntaxKind.Identifier);
+        var openParen = Match(SyntaxKind.OpenParenthesis);
+        var closeParen = Match(SyntaxKind.CloseParenthesis);
+        var body = (BlockStatementSyntax)ParseBlockStatement();
         return new FunctionDeclarationSyntax(returnType, identifier, openParen, closeParen, body);
     }
 
