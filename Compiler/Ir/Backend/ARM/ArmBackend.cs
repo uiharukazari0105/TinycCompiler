@@ -145,4 +145,44 @@ public class ArmBackend : Backend
         }
         EmitStore(builder, b.Result);
     }
+
+    public override IReadOnlyList<InsnEntry> GetInstructionTable() => new InsnEntry[]
+    {
+        new("数据传送", "x = c",       "ldr",  "r0, =imm / [addr]",  "立即数或地址载入寄存器 (需字面量池)"),
+        new("数据传送", "x = y",       "ldr + str", "r0, [addr] → r2, [addr]", "内存变量加载后存至目标地址"),
+        new("算术运算", "x = a + b",   "add",  "r0, r0, imm / reg", "整数加法 (三操作数格式)"),
+        new("算术运算", "x = a - b",   "sub",  "r0, r0, imm / reg", "整数减法"),
+        new("算术运算", "x = a * b",   "mul",  "r0, r0, reg",       "整数乘法 (ARM mul 不支持立即数)"),
+        new("算术运算", "x = a / b",   "(未实现)", "—",             "ARM 无硬件除法指令，需软件除或库调用"),
+        new("算术运算", "x = a % b",   "(未实现)", "—",             "同上"),
+        new("位运算",   "x = a & b",   "and",  "r0, r0, imm / reg", "按位与"),
+        new("位运算",   "x = a | b",   "orr",  "r0, r0, imm / reg", "按位或 (ARM 用 orr 非 or)"),
+        new("位运算",   "x = a ^ b",   "eor",  "r0, r0, imm / reg", "按位异或 (ARM 用 eor 非 xor)"),
+        new("位运算",   "x = ~a",      "mvn",  "r0, r0",            "按位取反 (MVN = MoVe Not)"),
+        new("一元运算", "x = -a",      "rsb",  "r0, r0, #0",        "算术取负 (RSB = Reverse SuBtract)"),
+        new("一元运算", "x = !a",      "cmp + mov/moveq", "r0",     "逻辑取反: 与0比较后条件置1/0"),
+        new("比较运算", "x = a == b",  "cmp + moveq", "r0, imm/reg", "相等比较 → 0/1 (条件传送)"),
+        new("比较运算", "x = a != b",  "cmp + movne", "r0, imm/reg", "不等比较 → 0/1"),
+        new("比较运算", "x = a < b",   "cmp + movlt", "r0, imm/reg", "小于比较 → 0/1"),
+        new("比较运算", "x = a <= b",  "cmp + movle", "r0, imm/reg", "小于等于比较 → 0/1"),
+        new("比较运算", "x = a > b",   "cmp + movgt", "r0, imm/reg", "大于比较 → 0/1"),
+        new("比较运算", "x = a >= b",  "cmp + movge", "r0, imm/reg", "大于等于比较 → 0/1"),
+        new("逻辑运算", "x = a && b",  "cmp/movne + and", "r0, r1", "逻辑与 (布尔化后按位与)"),
+        new("逻辑运算", "x = a || b",  "cmp/movne + orr", "r0, r1", "逻辑或 (布尔化后按位或)"),
+        new("控制流",   "if x == 0 goto L", "cmp + beq", "r0, label", "条件为假时跳转"),
+        new("控制流",   "goto L",      "b",    "label",              "无条件跳转 (Branch)"),
+        new("控制流",   "return x",    "ldr + pop {pc}", "r0",       "返回值载入 r0，通过出栈恢复 PC 返回"),
+        new("控制流",   "L:",          "L{n}:", "—",                  "跳转标签"),
+        new("栈帧",     "函数入口",    "push {lr}", "lr",             "保存返回地址到栈"),
+        new("栈帧",     "函数返回",    "pop {pc}", "pc",              "从栈恢复程序计数器实现返回"),
+        
+        new("复合赋值", "x += c",      "add + store", "r0 → [mem]",  "自增赋值 (先计算再store)"),
+        new("复合赋值", "x -= c",      "sub + store", "r0 → [mem]",  "自减赋值"),
+        new("复合赋值", "x *= c",      "mul + store", "r0 → [mem]",  "自乘赋值"),
+
+        new("自增自减", "++x",         "add + store", "r0 → [mem]",  "前缀自增：先加1再返回新值"),
+        new("自增自减", "--x",         "sub + store", "r0 → [mem]",  "前缀自减"),
+        new("自增自减", "x++",         "ldr + add + store", "r0 → [mem]", "后缀自增：保存旧值后加1"),
+        new("自增自减", "x--",         "ldr + sub + store", "r0 → [mem]", "后缀自减"),
+    };
 }

@@ -131,4 +131,8 @@ public abstract class Backend
     protected abstract void EmitAssign(StringBuilder builder, AssignIr a);
     protected abstract void EmitBinary(StringBuilder builder, BinaryIr b);
     protected abstract void EmitReturn(StringBuilder builder, ReturnIr r);
+
+    public abstract IReadOnlyList<InsnEntry> GetInstructionTable();
+
+    public readonly record struct InsnEntry(string Category, string IR, string Mnemonic, string Operands, string Description);
 }
